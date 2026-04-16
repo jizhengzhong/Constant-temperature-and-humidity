@@ -1,0 +1,15 @@
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+.\debugconfig\queue.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stdlib.h
+.\debugconfig\queue.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\string.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+.\debugconfig\queue.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stddef.h
+.\debugconfig\queue.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stdint.h
+.\debugconfig\queue.o: ../Core/Inc/FreeRTOSConfig.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+.\debugconfig\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

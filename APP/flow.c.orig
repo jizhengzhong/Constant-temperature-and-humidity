@@ -1,0 +1,149 @@
+#include "appmange.h"
+#include "main.h"
+#include "cmsis_os.h"
+#include "flow.h"
+#include "math.h"
+#include "task.h"
+#include "rtc.h"
+
+
+void CompressCtrl(TypeCtrl* pType)
+{
+    if (ParTab[PAR_POS_Run_Stop_Command].uVal == 1) {
+        if (pType->Parameter[TemperatureID].Target <= ParTab[PAR_POS_CMPRSSR_ON_TEMP_LOW].uVal * 0.1 |
+                pType->Parameter[HumidityID].Target <=  ParTab[PAR_POS_CMPRSSR_ON_HUMI_L].uVal * 0.1) {
+            SensorType.Flag.ColdState = 1;
+            ParTab[PAR_POS_bCTROL].iVal |= (1 << bCtrol_Compress_Mode);
+        } else {
+            SensorType.Flag.ColdState = 0 ;
+            ParTab[PAR_POS_bCTROL].iVal &= ~(1 << bCtrol_Compress_Mode);
+        }
+
+        if (pType->Parameter[TemperatureID].Measure >= ParTab[PAR_POS_CMPRSSR_ON_PROHIBITED].iVal * 0.1) {
+            SensorType.Flag.ColdState = 0;
+            ParTab[PAR_POS_bCTROL].iVal &= ~(1 << bCtrol_Compress_Mode);
+        }
+
+        if (pType->Parameter[TemperatureID].Target > ParTab[PAR_POS_CMPRSSR_OFF_TEMP].uVal * 0.1) {
+            if (pType->Parameter[TemperatureID].Measure > pType->Parameter[TemperatureID].Target &&
+                    pType->bOnceCompressorStart == 0) {
+                pType->bOnceCompressorStart = 1;
+                SensorType.Flag.ColdState = 1;
+                ParTab[PAR_POS_bCTROL].iVal |= (1 << bCtrol_Compress_Mode);
+            } else {
+                SensorType.Flag.ColdState = 0;
+                ParTab[PAR_POS_bCTROL].iVal &= ~(1 << bCtrol_Compress_Mode);
+            }
+        }
+
+        if (SensorType.Flag.ColdState == 0) {
+            SensorType.Compressor_Delay_time = 0 ;
+            Cmpr_OFF;
+        } else if (SensorType.Compressor_Delay_time > ParTab[PAR_POS_CMPRSSR_ON_DELAY].uVal) {
+            Cmpr_ON;
+            SensorType.Compressor_Delay_time = 2000;
+        }
+    } else {
+        Cmpr_OFF;
+        SensorType.Compressor_Delay_time = 0 ;
+        SensorType.Parameter[HumidityID].Bit.bStable = 0;
+        SensorType.RunTime = 0;
+    }
+}
+
+void DeforstingFun(DeforstID EventId, uint16_t *pTable, pFlowCallback Fun, pFlowEventFunEntry pEvent)
+{
+    pEvent(EventId, &pTable[0], Fun);
+}
+
+void Deforsting(Defrost* DefrostStruct, float* pSetTemp)
+{
+    uint8_t RunId = 0;
+    static uint8_t	flag = 0, LastRunId;
+    RunId = (*pSetTemp < DefrostStruct->Temp) ?  Deforst0 :
+            (*pSetTemp  < (++DefrostStruct)->Temp) ?  Deforst1 :
+            (*pSetTemp  < (++DefrostStruct)->Temp) ?  Deforst2 :
+            (*pSetTemp  < (++DefrostStruct)->Temp) ?  Deforst3 :
+            (*pSetTemp  < (++DefrostStruct)->Temp) ?  Deforst4 :
+            ProhibitedDeforst;
+
+    if (RunId != LastRunId) {
+        SensorType.DeforstingmilliSecond = 0;
+        SensorType.DeforstingIntervalSecond = 0;
+    }
+
+    LastRunId = RunId;
+
+    switch (flag) {
+    case 0:
+        if (SensorType.DeforstingmilliSecond <= DefrostStruct->Time * 100) {
+            Defrost_ON;
+        } else {
+            SensorType.DeforstingIntervalSecond = 0;
+            flag = 1;
+        }
+
+        break;
+
+    case 1:
+        if (SensorType.DeforstingIntervalSecond  <=  DefrostStruct->Interval) {
+            Defrost_OFF;
+        } else {
+            SensorType.DeforstingmilliSecond = 0;
+            flag = 0;
+        }
+
+        break;
+
+    default :
+        flag = 0;
+        break;
+    }
+}
+
+void bControl(void)
+{
+	
+	        SensorType.bDoorState =
+            Door_State_Check == DoorOpen_State ? DoorClose_State : DoorOpen_State;
+	    SensorType.bDoorState == DoorOpen_State ?
+    (ParUnSaved[PAR_POS_PRO_ALARM_CODE - PAR_REDA_ADDR].uVal |= bStateDoor) : (ParUnSaved[PAR_POS_PRO_ALARM_CODE -
+        PAR_REDA_ADDR].uVal &=  ~bStateDoor);
+	
+    if (ParTab[PAR_POS_Run_Stop_Command].uVal == 1) {
+        Deforsting((Defrost*)&ParTab[PAR_POS_DEFROSTING_TEMP1].iVal,  &SensorType.Parameter[TemperatureID].Target) ;
+        SensorType.Flag.CurrentModeState =  \
+                                            ParTab[PAR_POS_bCTROL].uVal >> bCtrol_Run_Mode & ProgramModeID ?   ProgramModeID : FixedModeID ;
+
+
+        if (SensorType.bDoorState == DoorOpen_State) {
+            SensorType.Flag.DoorRunControl = ParTab[PAR_POS_bCTROL].uVal >> bCtrol_Door_Check_Mode  ;
+            ParTab[PAR_POS_Run_Stop_Command].uVal = SensorType.Flag.DoorRunControl ?  1 : 0 ;
+        }
+
+        SensorType.Flag.TimeMode =  ParTab[PAR_POS_bCTROL].uVal >> bCtrol_Time_Mode ;
+        SensorType.Flag.LightState = ParTab[PAR_POS_bCTROL].uVal >> bCtrol_Light;
+        SensorType.Flag.LightState ?  Ligt_OFF : Ligt_ON;
+    }
+}
+
+
+
+
+void CheckInTask(void *argument)
+{
+    /* USER CODE BEGIN CheckInTask */
+
+    /* Infinite loop */
+    for (;;) {
+        bControl();
+        CompressCtrl(&SensorType);
+        osDelay(10);
+    }
+
+    /* USER CODE END CheckInTask */
+}
+
+
+
+

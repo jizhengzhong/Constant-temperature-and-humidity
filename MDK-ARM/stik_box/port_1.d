@@ -1,0 +1,12 @@
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+stik_box\port_1.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stddef.h
+stik_box\port_1.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stdint.h
+stik_box\port_1.o: ../Core/Inc/FreeRTOSConfig.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+stik_box\port_1.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

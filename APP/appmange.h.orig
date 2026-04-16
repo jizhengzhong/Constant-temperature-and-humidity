@@ -1,0 +1,107 @@
+#ifndef  __appmanage_H
+#define  __appmanage_H
+
+#include <stdint.h>
+#include "main.h"
+#include "stdbool.h"
+
+
+void PrintStart(void) ;
+void PrintString(char *pString);
+
+typedef struct {
+    float Temperature;
+    float Humidity;
+
+} SensorADC;
+
+typedef struct {
+    u8 Pon: 1; //断电恢复功能
+#define FixMode						0
+#define CurrentModePro 		1
+    u8 CurrentModeState: 1; //模式选择 0：定制模式  1：程序模式
+
+    u8 Cnd: 1; //控温方式 0：时间到进入下一段 1：温度到进入下一段
+#define      EnRun         1
+#define      DisRun        0
+    u8 Flag_EnRun: 1;      //控制器运行停止标志位
+    u8 Code_End: 1;      //编程模式结束
+    u8 ColdState:1;
+	    unsigned char EnTime: 1;
+    unsigned char EnTimeEnd: 1;
+} TypeCommon;
+
+
+typedef struct {
+    unsigned char bHeatOut: 1; //加热输出标志位
+    unsigned char bDisIsum: 1; //禁止加热积分累积
+    unsigned char bAlm: 1;  //温度报警标志位
+    unsigned char bOver: 1;
+    unsigned char bProtect: 1;
+    unsigned char bDowm: 1;
+    unsigned char bRun: 1;
+	  unsigned  char RunSetBit: 1;
+
+
+} TypeBit;
+
+
+typedef struct {
+    short T; //控制周期
+    short P; //比例带
+    short I; //积分时间
+    short d; //微分时间
+    short OutValue;
+    int ISumVaule;
+    float Target;
+    float Measure;
+    float Display;
+    float LastMeasure;
+    float DFVaule;
+    float Fliter;
+	  float SetDiff;
+    unsigned char gama;
+    unsigned char AR;
+    unsigned char Time_HeatCycle;
+    TypeBit Bit;
+	  unsigned short  Time_5min;
+    unsigned short  Time_HeatCounter;
+
+
+    void (*HeatCallback)(bool);
+} PidParam;
+
+typedef struct {
+    unsigned char Time_HeatCycle;
+    unsigned char Time_5min;
+    unsigned short  Time_HeatCounter;
+} TimeTypedef;
+
+typedef enum {
+#define EVIdEnumCount  2
+    TemperatureID = 0,
+    HumidityID,
+
+} EVIdEnum;
+
+typedef enum {
+#define 	EVEnumCount  4
+    GetSensorValueID = 0,
+    DisplaySensorValueID,
+    TempParaUpdataID,
+    HumiParaUpdataID
+} EVEnum;
+
+typedef struct {
+#define   TypeID       2
+    PidParam  Parameter[TypeID];
+	  unsigned char   FanOutTime;
+		  unsigned	short int RunTime;
+    TypeCommon	Flag;
+} TypeCtrl;
+extern TypeCtrl SensorType;
+
+extern void Control(PidParam* PID_Parameter, TypeCommon *pTypeCommon);
+#endif
+
+

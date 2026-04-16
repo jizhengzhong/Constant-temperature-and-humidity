@@ -1,0 +1,91 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.41.0.0
+Copyright (C) 2024 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: 123235 stikjsk@126.com, QTRQY, LIC=QF82M-XKV6T-63TMB-2ZU7L-5LI2T-NFC3L
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.41.0.0
+Toolchain Path:  D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin
+C Compiler:      Armcc.exe V5.05 update 1 (build 106)
+Assembler:       Armasm.exe V5.05 update 1 (build 106)
+Linker/Locator:  ArmLink.exe V5.05 update 1 (build 106)
+Library Manager: ArmAr.exe V5.05 update 1 (build 106)
+Hex Converter:   FromElf.exe V5.05 update 1 (build 106)
+CPU DLL:         SARMCM3.DLL V5.41.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      Segger\JL2CM3.dll V2.99.45.0
+Dialog DLL:      TCM.DLL V1.56.4.0
+ 
+<h2>Project:</h2>
+D:\stik\box_code\box_v1.36\MDK-ARM\stik_box.uvprojx
+Project File Date:  03/06/2025
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.05 update 1 (build 106)', folder: 'D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin'
+Build target 'stik_box'
+Note: source file '../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c' - object file renamed from 'stik_box\port.o' to 'stik_box\port_1.o'.
+compiling dma.c...
+compiling rtc.c...
+compiling spi.c...
+compiling adc.c...
+compiling gpio.c...
+compiling main.c...
+compiling tim.c...
+compiling stm32f1xx_hal_msp.c...
+compiling portserial.c...
+compiling usart.c...
+compiling stm32f1xx_it.c...
+compiling port.c...
+compiling porttimer.c...
+compiling ParaTask.c...
+compiling W25Qxx.c...
+compiling flow.c...
+..\APP\flow.c(43): warning:  #550-D: variable "WaterLevelState" was set but never used
+      char  WaterLevelState;
+..\APP\flow.c(44): warning:  #550-D: variable "DoorState" was set but never used
+  	  char DoorState;
+..\APP\flow.c: 2 warnings, 0 errors
+compiling appmange.c...
+..\APP\appmange.c(598): warning:  #188-D: enumerated type mixed with another type
+                  EvFunTab[i].ActFun(i, &SensorType);
+..\APP\appmange.c: 1 warning, 0 errors
+compiling freertos.c...
+compiling contrl.c...
+..\APP\contrl.c(82): warning:  #550-D: variable "PromodePara" was set but never used
+      Para *PromodePara = NULL;
+..\APP\contrl.c: 1 warning, 0 errors
+linking...
+Program Size: Code=35492 RO-data=5464 RW-data=520 ZI-data=33296  
+FromELF: creating hex file...
+"stik_box\stik_box.axf" - 0 Error(s), 4 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                https://www.keil.com/pack/ARM.CMSIS.6.1.0.pack
+                ARM::CMSIS@6.1.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 6.1.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F1xx_DFP.1.0.5.pack
+                Keil::STM32F1xx_DFP@1.0.5
+                STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_stik_box
+  D:/Users/stikj/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include
+  D:/Users/stikj/AppData/Local/Arm/Packs/Keil/STM32F1xx_DFP/1.0.5/Device/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE@6.1.0
+      Include file:  CMSIS/Core/Include/tz_context.h
+Build Time Elapsed:  00:01:03
+</pre>
+</body>
+</html>

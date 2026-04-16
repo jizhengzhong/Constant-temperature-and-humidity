@@ -1,0 +1,282 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file    adc.h
+  * @brief   This file contains all the function prototypes for
+  *          the adc.c file
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __CONTRL_H__
+#define __CONTRL_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "ADCSample.h"
+#include "flow.h"
+
+/* USER CODE BEGIN Includes */
+
+
+/* USER CODE END Includes */
+
+
+/* USER CODE BEGIN Private defines */
+
+
+
+/* USER CODE END Private defines */
+
+
+	
+
+
+#define PAR_VERSION_ID                          0x12C0
+	
+#define PAR_POS_VER_ID      								   0                                   //0  版本
+#define PAR_POS_UPDATE_TIME           			  (PAR_POS_VER_ID+1)                   //1  更新时间
+#define PAR_POS_UPDATE                			  (PAR_POS_UPDATE_TIME+1)              //2  更新程序
+#define PAR_POS_Run_Stop_Command   	   			  (PAR_POS_UPDATE+1)                   //3                                                                             
+#define PAR_POS_TEMP_SV     								  (PAR_POS_Run_Stop_Command+1)         //4
+#define PAR_POS_HUMI_SV             				  (PAR_POS_TEMP_SV+1)   				       //5
+#define PAR_POS_TEMP_PRO_SV     						  (PAR_POS_HUMI_SV+1)                  //6
+#define PAR_POS_HUMI_PRO_SV             			(PAR_POS_TEMP_PRO_SV+1)   				   //7
+#define PAR_POS_RUN_TIME_SET         			    (PAR_POS_HUMI_PRO_SV+1)              //8
+#define PAR_POS_TEMP_Pb         			        (PAR_POS_RUN_TIME_SET+1)             //9
+#define PAR_POS_TEMP_Pk         			        (PAR_POS_TEMP_Pb+1)                  //10
+#define PAR_POS_HUMI_Pb         			        (PAR_POS_TEMP_Pk+1)                  //11
+#define PAR_POS_HUMI_Pk         			        (PAR_POS_HUMI_Pb+1)                  //12
+#define PAR_POS_TEMP_AL         			        (PAR_POS_HUMI_Pk+1)                  //13
+#define PAR_POS_TEMP_AH         			        (PAR_POS_TEMP_AL+1)                  //14
+#define PAR_POS_TEMP_FILTER         			    (PAR_POS_TEMP_AH+1)                  //15
+#define PAR_POS_HUMI_AL         			        (PAR_POS_TEMP_FILTER+1)              //16
+#define PAR_POS_HUMI_AH         			        (PAR_POS_HUMI_AL+1)                  //17
+#define PAR_POS_HUMI_FILTER         			    (PAR_POS_HUMI_AH+1)                  //18
+#define PAR_POS_HUMI_DIFF_COUNT         		  (PAR_POS_HUMI_FILTER+1)              //19
+#define PAR_POS_TEMP_DIFF_COUNT         			(PAR_POS_HUMI_DIFF_COUNT+1)          //20
+#define PAR_POS_TEMP_P_SET  		             (PAR_POS_TEMP_DIFF_COUNT+1)           //21
+#define PAR_POS_TEMP_I_SET  	               (PAR_POS_TEMP_P_SET+1)                //22
+#define PAR_POS_TEMP_D_SET  	               (PAR_POS_TEMP_I_SET+1)                //23
+#define PAR_POS_TEMP_AR_SET                  (PAR_POS_TEMP_D_SET+1)                //24
+#define PAR_POS_TEMP_T_SET 	                 (PAR_POS_TEMP_AR_SET+1)               //25
+#define PAR_POS_TEMP_GAMA_SET 	             (PAR_POS_TEMP_T_SET+1)                //26
+#define PAR_POS_HUMI_AR 	                   (PAR_POS_TEMP_GAMA_SET+1)             //27
+#define PAR_POS_HUMI_T 	                     (PAR_POS_HUMI_AR+1)                   //28
+#define PAR_POS_HUMI_P 	                     (PAR_POS_HUMI_T+1)                    //29
+#define PAR_POS_HUMI_I	                     (PAR_POS_HUMI_P+1)                    //30
+#define PAR_POS_HUMI_D	                     (PAR_POS_HUMI_I+1)                    //31
+#define PAR_POS_HUMI_GAMA	                   (PAR_POS_HUMI_D+1)                    //32
+#define PAR_POS_PRO_CHOICE_MODE              (PAR_POS_HUMI_GAMA+1)                 //33
+#define PAR_POS_HUMI_SENSOR_LOW_VOLTAGE      (PAR_POS_PRO_CHOICE_MODE+1)           //34
+#define PAR_POS_HUMI_SENSOR_HIGH_VOLTAGE     (PAR_POS_HUMI_SENSOR_LOW_VOLTAGE+1)   //35
+#define PAR_POS_COMPRESSOR_ON_OFF_SET	 						 (PAR_POS_HUMI_SENSOR_HIGH_VOLTAGE+1)  //36
+#define PAR_POS_CMPRSSR_ON_TEMP_LOW          (PAR_POS_COMPRESSOR_ON_OFF_SET+1)							//37
+#define PAR_POS_CMPRSSR_ON_HUMI_LOW          (PAR_POS_CMPRSSR_ON_TEMP_LOW+1)				//38
+#define PAR_POS_CMPRSSR_OFF_TEMP_H         (PAR_POS_CMPRSSR_ON_HUMI_LOW+1)				//39
+#define PAR_POS_CMPRSSR_OFF_HUMI_H         (PAR_POS_CMPRSSR_OFF_TEMP_H+1)				//40
+#define PAR_POS_CMPRSSR_ON_DELAY             (PAR_POS_CMPRSSR_OFF_HUMI_H+1)  			//41
+#define PAR_POS_ADD_WATER_DELAY              (PAR_POS_CMPRSSR_ON_DELAY+1)      			//42
+#define PAR_POS_ADD_WATER_RELAY              (PAR_POS_ADD_WATER_DELAY+1)      			//43
+#define PAR_POS_DRAIN_RELAY                  (PAR_POS_ADD_WATER_RELAY+1)      			//44
+#define PAR_POS_PRO_STEP                      (PAR_POS_DRAIN_RELAY+1)              //45
+#define PAR_POS_TEMP_PROGRAM_MODE0            (PAR_POS_PRO_STEP+1) 							     //46
+#define PAR_POS_HUMI_PROGRAM_MODE0            (PAR_POS_TEMP_PROGRAM_MODE0+1)    		 //47
+#define PAR_POS_TIME_PROGRAM_MODE0            (PAR_POS_HUMI_PROGRAM_MODE0+1)         //48
+#define PAR_POS_TEMP_PROGRAM_MODE1            (PAR_POS_TIME_PROGRAM_MODE0+1)         //49
+#define PAR_POS_HUMI_PROGRAM_MODE1            (PAR_POS_TEMP_PROGRAM_MODE1+1)         //50
+#define PAR_POS_TIME_PROGRAM_MODE1            (PAR_POS_HUMI_PROGRAM_MODE1+1)         //51
+#define PAR_POS_TEMP_PROGRAM_MODE2            (PAR_POS_TIME_PROGRAM_MODE1+1)         //52
+#define PAR_POS_HUMI_PROGRAM_MODE2            (PAR_POS_TEMP_PROGRAM_MODE2+1)         //53
+#define PAR_POS_TIME_PROGRAM_MODE2            (PAR_POS_HUMI_PROGRAM_MODE2+1)         //54
+#define PAR_POS_TEMP_PROGRAM_MODE3            (PAR_POS_TIME_PROGRAM_MODE2+1)         //55
+#define PAR_POS_HUMI_PROGRAM_MODE3            (PAR_POS_TEMP_PROGRAM_MODE3+1)         //56
+#define PAR_POS_TIME_PROGRAM_MODE3            (PAR_POS_HUMI_PROGRAM_MODE3+1)         //57
+#define PAR_POS_TEMP_PROGRAM_MODE4            (PAR_POS_TIME_PROGRAM_MODE3+1)         //58
+#define PAR_POS_HUMI_PROGRAM_MODE4            (PAR_POS_TEMP_PROGRAM_MODE4+1)         //59
+#define PAR_POS_TIME_PROGRAM_MODE4            (PAR_POS_HUMI_PROGRAM_MODE4+1)         //60
+#define PAR_POS_TEMP_PROGRAM_MODE5            (PAR_POS_TIME_PROGRAM_MODE4+1)         //61
+#define PAR_POS_HUMI_PROGRAM_MODE5            (PAR_POS_TEMP_PROGRAM_MODE5+1)         //62
+#define PAR_POS_TIME_PROGRAM_MODE5            (PAR_POS_HUMI_PROGRAM_MODE5+1)         //63
+#define PAR_POS_TEMP_PROGRAM_MODE6            (PAR_POS_TIME_PROGRAM_MODE5+1)         //64
+#define PAR_POS_HUMI_PROGRAM_MODE6            (PAR_POS_TEMP_PROGRAM_MODE6+1)         //65
+#define PAR_POS_TIME_PROGRAM_MODE6            (PAR_POS_HUMI_PROGRAM_MODE6+1)         //66
+#define PAR_POS_TEMP_PROGRAM_MODE7            (PAR_POS_TIME_PROGRAM_MODE6+1)         //67
+#define PAR_POS_HUMI_PROGRAM_MODE7            (PAR_POS_TEMP_PROGRAM_MODE7+1)         //68
+#define PAR_POS_TIME_PROGRAM_MODE7            (PAR_POS_HUMI_PROGRAM_MODE7+1)         //69
+#define PAR_POS_TEMP_PROGRAM_MODE8            (PAR_POS_TIME_PROGRAM_MODE7+1)         //70
+#define PAR_POS_HUMI_PROGRAM_MODE8            (PAR_POS_TEMP_PROGRAM_MODE8+1)         //71
+#define PAR_POS_TIME_PROGRAM_MODE8            (PAR_POS_HUMI_PROGRAM_MODE8+1)         //72
+#define PAR_POS_TEMP_PROGRAM_MODE9            (PAR_POS_TIME_PROGRAM_MODE8+1)         //73
+#define PAR_POS_HUMI_PROGRAM_MODE9            (PAR_POS_TEMP_PROGRAM_MODE9+1)         //74
+#define PAR_POS_TIME_PROGRAM_MODE9            (PAR_POS_HUMI_PROGRAM_MODE9+1)         //75
+#define PAR_POS_TEMP_PROGRAM_MODE10            (PAR_POS_TIME_PROGRAM_MODE9+1)        //76
+#define PAR_POS_HUMI_PROGRAM_MODE10            (PAR_POS_TEMP_PROGRAM_MODE10+1)       //77
+#define PAR_POS_TIME_PROGRAM_MODE10            (PAR_POS_HUMI_PROGRAM_MODE10+1)       //78
+#define PAR_POS_TEMP_PROGRAM_MODE11            (PAR_POS_TIME_PROGRAM_MODE10+1)       //79
+#define PAR_POS_HUMI_PROGRAM_MODE11            (PAR_POS_TEMP_PROGRAM_MODE11+1)       //80
+#define PAR_POS_TIME_PROGRAM_MODE11            (PAR_POS_HUMI_PROGRAM_MODE11+1)       //81
+#define PAR_POS_TEMP_PROGRAM_MODE12            (PAR_POS_TIME_PROGRAM_MODE11+1)       //82
+#define PAR_POS_HUMI_PROGRAM_MODE12            (PAR_POS_TEMP_PROGRAM_MODE12+1)       //83
+#define PAR_POS_TIME_PROGRAM_MODE12            (PAR_POS_HUMI_PROGRAM_MODE12+1)       //84
+#define PAR_POS_TEMP_PROGRAM_MODE13            (PAR_POS_TIME_PROGRAM_MODE12+1)      //85
+#define PAR_POS_HUMI_PROGRAM_MODE13            (PAR_POS_TEMP_PROGRAM_MODE13+1)      //86
+#define PAR_POS_TIME_PROGRAM_MODE13            (PAR_POS_HUMI_PROGRAM_MODE13+1)      //87
+#define PAR_POS_TEMP_PROGRAM_MODE14            (PAR_POS_TIME_PROGRAM_MODE13+1)      //88
+#define PAR_POS_HUMI_PROGRAM_MODE14            (PAR_POS_TEMP_PROGRAM_MODE14+1)      //89
+#define PAR_POS_TIME_PROGRAM_MODE14            (PAR_POS_HUMI_PROGRAM_MODE14+1)      //90
+#define PAR_POS_TEMP_PROGRAM_MODE15            (PAR_POS_TIME_PROGRAM_MODE14+1)      //91
+#define PAR_POS_HUMI_PROGRAM_MODE15            (PAR_POS_TEMP_PROGRAM_MODE15+1)      //92
+#define PAR_POS_TIME_PROGRAM_MODE15            (PAR_POS_HUMI_PROGRAM_MODE15+1)      //93
+#define PAR_POS_TEMP_PROGRAM_MODE16            (PAR_POS_TIME_PROGRAM_MODE15+1)      //94
+#define PAR_POS_HUMI_PROGRAM_MODE16            (PAR_POS_TEMP_PROGRAM_MODE16+1)      //95
+#define PAR_POS_TIME_PROGRAM_MODE16            (PAR_POS_HUMI_PROGRAM_MODE16+1)      //96
+#define PAR_POS_TEMP_PROGRAM_MODE17            (PAR_POS_TIME_PROGRAM_MODE16+1)      //97
+#define PAR_POS_HUMI_PROGRAM_MODE17            (PAR_POS_TEMP_PROGRAM_MODE17+1)      //98
+#define PAR_POS_TIME_PROGRAM_MODE17            (PAR_POS_HUMI_PROGRAM_MODE17+1)      //99
+#define PAR_POS_TEMP_PROGRAM_MODE18            (PAR_POS_TIME_PROGRAM_MODE17+1)      //100
+#define PAR_POS_HUMI_PROGRAM_MODE18            (PAR_POS_TEMP_PROGRAM_MODE18+1)      //101
+#define PAR_POS_TIME_PROGRAM_MODE18            (PAR_POS_HUMI_PROGRAM_MODE18+1)      //102
+#define PAR_POS_TEMP_PROGRAM_MODE19            (PAR_POS_TIME_PROGRAM_MODE18+1)    //103
+#define PAR_POS_HUMI_PROGRAM_MODE19            (PAR_POS_TEMP_PROGRAM_MODE19+1)    //104
+#define PAR_POS_TIME_PROGRAM_MODE19            (PAR_POS_HUMI_PROGRAM_MODE19+1)    //105
+#define PAR_POS_TEMP_PROGRAM_MODE20            (PAR_POS_TIME_PROGRAM_MODE19+1)    //106
+#define PAR_POS_HUMI_PROGRAM_MODE20            (PAR_POS_TEMP_PROGRAM_MODE20+1)    //107
+#define PAR_POS_TIME_PROGRAM_MODE20            (PAR_POS_HUMI_PROGRAM_MODE20+1)    //108
+#define PAR_POS_TEMP_PROGRAM_MODE21            (PAR_POS_TIME_PROGRAM_MODE20+1)    //109
+#define PAR_POS_HUMI_PROGRAM_MODE21            (PAR_POS_TEMP_PROGRAM_MODE21+1)    //110
+#define PAR_POS_TIME_PROGRAM_MODE21            (PAR_POS_HUMI_PROGRAM_MODE21+1)    //111
+#define PAR_POS_TEMP_PROGRAM_MODE22            (PAR_POS_TIME_PROGRAM_MODE21+1)    //112
+#define PAR_POS_HUMI_PROGRAM_MODE22            (PAR_POS_TEMP_PROGRAM_MODE22+1)    //113
+#define PAR_POS_TIME_PROGRAM_MODE22            (PAR_POS_HUMI_PROGRAM_MODE22+1)    //114
+#define PAR_POS_TEMP_PROGRAM_MODE23            (PAR_POS_TIME_PROGRAM_MODE22+1)    //115
+#define PAR_POS_HUMI_PROGRAM_MODE23            (PAR_POS_TEMP_PROGRAM_MODE23+1)    //116
+#define PAR_POS_TIME_PROGRAM_MODE23            (PAR_POS_HUMI_PROGRAM_MODE23+1)    //117
+#define PAR_POS_TEMP_PROGRAM_MODE24            (PAR_POS_TIME_PROGRAM_MODE23+1)    //118
+#define PAR_POS_HUMI_PROGRAM_MODE24            (PAR_POS_TEMP_PROGRAM_MODE24+1)    //119
+#define PAR_POS_TIME_PROGRAM_MODE24            (PAR_POS_HUMI_PROGRAM_MODE24+1)    //120
+#define PAR_POS_TEMP_PROGRAM_MODE25            (PAR_POS_TIME_PROGRAM_MODE24+1)    //121
+#define PAR_POS_HUMI_PROGRAM_MODE25            (PAR_POS_TEMP_PROGRAM_MODE25+1)    //122
+#define PAR_POS_TIME_PROGRAM_MODE25            (PAR_POS_HUMI_PROGRAM_MODE25+1)    //123
+#define PAR_POS_TEMP_PROGRAM_MODE26            (PAR_POS_TIME_PROGRAM_MODE25+1)    //124
+#define PAR_POS_HUMI_PROGRAM_MODE26            (PAR_POS_TEMP_PROGRAM_MODE26+1)    //125
+#define PAR_POS_TIME_PROGRAM_MODE26            (PAR_POS_HUMI_PROGRAM_MODE26+1)    //126
+#define PAR_POS_TEMP_PROGRAM_MODE27            (PAR_POS_TIME_PROGRAM_MODE26+1)    //127
+#define PAR_POS_HUMI_PROGRAM_MODE27            (PAR_POS_TEMP_PROGRAM_MODE27+1)    //128
+#define PAR_POS_TIME_PROGRAM_MODE27            (PAR_POS_HUMI_PROGRAM_MODE27+1)    //129
+#define PAR_POS_TEMP_PROGRAM_MODE28            (PAR_POS_TIME_PROGRAM_MODE27+1)    //130
+#define PAR_POS_HUMI_PROGRAM_MODE28            (PAR_POS_TEMP_PROGRAM_MODE28+1)    //131
+#define PAR_POS_TIME_PROGRAM_MODE28            (PAR_POS_HUMI_PROGRAM_MODE28+1)    //132
+#define PAR_POS_TEMP_PROGRAM_MODE29            (PAR_POS_TIME_PROGRAM_MODE28+1)    //133
+#define PAR_POS_HUMI_PROGRAM_MODE29            (PAR_POS_TEMP_PROGRAM_MODE29+1)    //134
+#define PAR_POS_TIME_PROGRAM_MODE29            (PAR_POS_HUMI_PROGRAM_MODE29+1)    //135
+#define PAR_POS_TEMP_PROGRAM_EDN_COUNT         (PAR_POS_TIME_PROGRAM_MODE29+1)    //136
+#define PAR_POS_END                            (PAR_POS_TEMP_PROGRAM_EDN_COUNT+3)  //139
+
+
+#define PAR_REDA_ADDR                        0X500
+#define PAR_POS_CURRENT_YEAR				         PAR_REDA_ADDR+0    									//0
+#define PAR_POS_CURRENT_MONTH               (PAR_POS_CURRENT_YEAR+1)              //1
+#define PAR_POS_CURRENT_DAY                 (PAR_POS_CURRENT_MONTH+1)             //2
+#define PAR_POS_CURRENT_HOUR                (PAR_POS_CURRENT_DAY+1)               //3
+#define PAR_POS_CURRENT_MINUTE              (PAR_POS_CURRENT_HOUR+1)              //4
+#define PAR_POS_CURRENT_SECOND              (PAR_POS_CURRENT_MINUTE+1)            //5
+#define PAR_POS_FAN_AR                 		  (PAR_POS_CURRENT_SECOND+1)        		//6 
+
+
+//以下为只读程序
+
+#define PAR_POS_TEMP_DISPLAY                (PAR_POS_FAN_AR+1)                   //0
+#define PAR_POS_HUMI_DISPLAY                (PAR_POS_TEMP_DISPLAY+1)              //1
+#define PAR_POS_TEMP_POWER                  (PAR_POS_HUMI_DISPLAY+1)              //2
+#define PAR_POS_HUMI_POWER                  (PAR_POS_TEMP_POWER+1)                //3
+
+
+
+
+
+
+/* USER CODE BEGIN Prototypes */
+
+#define  DoorOpen_State      1 
+#define  DoorClose_State     0
+#define  Unlock_State        1 
+#define  Lock_State          0
+
+
+#define Hum_HEAT_OFF 		 	 HAL_GPIO_WritePin(Hum_Ctrl_GPIO_Port, Hum_Ctrl_Pin, GPIO_PIN_RESET)
+#define Hum_HEAT_ON 	  	 HAL_GPIO_WritePin(Hum_Ctrl_GPIO_Port, Hum_Ctrl_Pin, GPIO_PIN_SET)
+#define HEAT_OFF 		  		 HAL_GPIO_WritePin(GPIOC, Heat_Ctrl_Pin, GPIO_PIN_RESET)
+#define HEAT_ON 	       	 HAL_GPIO_WritePin(GPIOC, Heat_Ctrl_Pin, GPIO_PIN_SET)
+#define Cool_OFF         	 HAL_GPIO_WritePin(Cool_Ctrl_GPIO_Port, Cool_Ctrl_Pin, GPIO_PIN_RESET)
+#define Cool_ON            HAL_GPIO_WritePin(Cool_Ctrl_GPIO_Port, Cool_Ctrl_Pin, GPIO_PIN_SET)
+
+#define CFK_POWER_ON        HAL_GPIO_WritePin(Ctr_CKF_GPIO_Port,Ctr_CKF_Pin, GPIO_PIN_SET)
+#define CFK_POWER_OFF       HAL_GPIO_WritePin(Ctr_CKF_GPIO_Port,Ctr_CKF_Pin, GPIO_PIN_RESET)
+
+#define High_Level_Check    HAL_GPIO_ReadPin(Water_High_Level_Check_GPIO_Port,Water_High_Level_Check_Pin)
+#define Low_Level_Check     HAL_GPIO_ReadPin(Water_Low_Level_Check_GPIO_Port,Water_Low_Level_Check_Pin)
+
+#define Lock_State_Check    HAL_GPIO_ReadPin(Lock_State_GPIO_Port,Lock_State_Pin)
+#define Door_State_Check    HAL_GPIO_ReadPin(Door_State_GPIO_Port,Door_State_Pin)
+#define Dry_Protect_Check   HAL_GPIO_ReadPin(Dry_Protect_State_GPIO_Port,Dry_Protect_State_Pin)
+
+#define Fan_ON              HAL_GPIO_WritePin(Ctr_FAN_GPIO_Port, Ctr_FAN_Pin, GPIO_PIN_RESET)
+#define Fan_OFF             HAL_GPIO_WritePin(Ctr_FAN_GPIO_Port, Ctr_FAN_Pin, GPIO_PIN_SET)
+
+#define Lock_PowerON        HAL_GPIO_WritePin(Ctr_Lock_GPIO_Port, Ctr_Lock_Pin, GPIO_PIN_SET)
+#define Lock_PowerOFF       HAL_GPIO_WritePin(Ctr_Lock_GPIO_Port, Ctr_Lock_Pin, GPIO_PIN_RESET)
+
+#define ALM_ON      			  HAL_GPIO_WritePin(GPIOA, Heat_Ctrl_Pin, GPIO_PIN_SET)
+#define ALM_OFF     			  HAL_GPIO_WritePin(GPIOA, Heat_Ctrl_Pin, GPIO_PIN_SET)
+
+#define  Cmpr_ON            HAL_GPIO_WritePin(Cmpr_Ctrl_GPIO_Port, Cmpr_Ctrl_Pin, GPIO_PIN_SET)
+#define  Cmpr_OFF           HAL_GPIO_WritePin(Cmpr_Ctrl_GPIO_Port, Cmpr_Ctrl_Pin, GPIO_PIN_RESET)
+
+typedef union {
+    uint16_t uVal;
+    uint16_t iVal;
+    uint8_t  uBytes[2];
+    uint8_t  iBytes[2];
+} partab_type;
+
+
+extern partab_type ParTab[PAR_POS_END + 2]; //工作参数
+extern partab_type ParReceive[PAR_POS_END + 2]; //接收参数
+extern partab_type ParSaved[PAR_POS_END + 2]; //接收已存储的参数
+extern partab_type ParUnSaved[PAR_POS_FAN_AR+2];
+//extern  uint8_t    ParReadSt[PAR_POS_END + 2]; //指示上位机已读该参数
+
+
+typedef struct {
+    uint16_t attr;
+    int16_t  min;
+    int16_t max;
+    int16_t init;
+    uint8_t code[20];
+} partab_attr_type;
+
+
+
+/* USER CODE END Prototypes */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __ADC_H__ */
+

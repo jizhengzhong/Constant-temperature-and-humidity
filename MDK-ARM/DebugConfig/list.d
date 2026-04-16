@@ -1,0 +1,12 @@
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/list.c
+.\debugconfig\list.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stdlib.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+.\debugconfig\list.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stddef.h
+.\debugconfig\list.o: D:\Keil_v5\Backup.001\ARM\ARMCC505\Bin\..\include\stdint.h
+.\debugconfig\list.o: ../Core/Inc/FreeRTOSConfig.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+.\debugconfig\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

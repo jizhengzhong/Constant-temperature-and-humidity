@@ -1,0 +1,126 @@
+#include "contrl.h"
+#include "display.h"
+#include "ADCSample.h"
+#include "cmsis_os.h"
+#include "math.h"
+#include "W25Qxx.h"
+#include "appmange.h"
+
+typedef struct {
+	  uint8_t  RunNow;
+	  uint8_t  Cycle;
+    uint16_t Temperature;
+    uint16_t Humidity;
+    uint16_t SetTime;
+	  uint8_t  EndCount;
+} ProModeStruct;
+
+
+
+ProModeStruct *ProModeStructment = NULL;
+float TempValue, HumidityValue;
+void ProgramAPP(partab_type *pTab, TypeCtrl *pSensorValue)
+{
+    ProModeStructment = (ProModeStruct *)pTab;
+    ParUnSaved[PAR_POS_CURRENT_STEP].uVal=ProModeStructment->RunNow;
+    if (pSensorValue->Flag.CurrentModeState == ProgramModeID && ParTab[PAR_POS_Run_Stop_Command].uVal) {
+        if ( ProModeStructment->RunNow <  ParTab[PAR_POS_TEMP_PROGRAM_END_COUNT].uVal) {
+					  pSensorValue->SetRunTime = ProModeStructment->SetTime;
+            ParTab[PAR_POS_TEMP_PRO_SV].uVal =ProModeStructment->Temperature;
+            ParTab[PAR_POS_HUMI_PRO_SV].uVal 		= ProModeStructment->Humidity;
+            HumidityValue = pSensorValue->Parameter[HumidityID].Measure -ProModeStructment->Humidity;
+            TempValue = pSensorValue->Parameter[TemperatureID].Measure - ProModeStructment->Temperature;
+            if (fabs(HumidityValue) < ParTab[PAR_POS_HUMI_DIFF_COUNT].uVal &&
+                    fabs(TempValue) < ParTab[PAR_POS_TEMP_DIFF_COUNT].uVal) {
+                     pSensorValue->Flag.EnTime = 1;  
+                if (pSensorValue->RunTime  >= ProModeStructment->SetTime * 60) {
+                    pSensorValue->RunTime = 0;
+                    ProModeStructment->RunNow++;
+									 if(ProModeStructment->RunNow >= ProModeStructment->EndCount)
+									 {
+										 if( ProModeStructment->Cycle >0 )
+										 {
+										 	pSensorValue->Flag.EnTime = 0;
+										  ProModeStructment->RunNow = 0;
+										 }else
+										 {
+										  ParTab[PAR_POS_Run_Stop_Command].uVal = 0;
+										  pSensorValue->Flag.EnTime = 0;
+										 }
+									 }
+                }
+            } else {
+                pSensorValue->Flag.EnTime = 0;
+            }
+        } else  {
+                   pSensorValue->Flag.EnTime = 0 ; 
+        }
+    }else  ProModeStructment->RunNow = 0;
+}
+
+
+
+
+void Temp_Hea_State(bool state)
+{
+    state == Heat_OFF  ? HEAT_OFF : HEAT_ON;
+}
+
+void Hum_Hea_State(bool state)
+{
+    state == Heat_OFF ? Hum_HEAT_OFF : Hum_HEAT_ON;
+}
+
+
+
+
+/* USER CODE BEGIN Header_ProgramemodeTask */
+/**
+* @brief Function implementing the tid_PromodeTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_ProgramemodeTask */
+void ProgramemodeTask(void *argument)
+{
+    /* USER CODE BEGIN ProgramemodeTask */
+    //    osStatus_t status;
+    //    TypeCtrl SensorPara;
+    //    Para *PromodePara = NULL;
+    //	  uint8_t Senbuff[256] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff}; //定义数据发送数组
+    //    partab_type Senbuff1[9] = {0x0011, 0x2233, 0x4455, 0x6677, 0x8899, 0xaabb, 0xccdd, 0xeeff, 0x1234}; //定义数据发送数组
+    //    W25Qxx_Erase_Sector(0);
+    //    W25Qxx_Write_Page((uint8_t*)Senbuff1, 1);
+    //    osDelay(100);
+    //    W25Qxx_Read((uint8_t*)Receivebuff, 256, 256) ;
+    //    PromodePara = (Para *)Receivebuff;
+    SensorType.Parameter[TemperatureID].HeatCallback = Temp_Hea_State;
+    SensorType.Parameter[HumidityID].HeatCallback = Hum_Hea_State;
+
+
+    /* Infinite loop */
+    for (;;) {
+        //        status = osMessageQueuePut(ReadonlyQueue0Handle, &SensorPara, 0U, 40U);
+        //        if (status != osOK) {
+        //            osMessageQueueReset(ReadonlyQueue0Handle);
+        //            printf("%d\r\n", status);
+        //        } 
+			  if(SensorType.Flag.CurrentModeState ==  ProgramModeID)
+			  ProgramAPP(&ParTab[PAR_POS_PRO_RUN_ROW], &SensorType);
+				else
+				{
+      
+        Control(&SensorType.Parameter[TemperatureID], &SensorType.Flag);
+        Control(&SensorType.Parameter[HumidityID], &SensorType.Flag);
+				}
+        osDelay(10);
+    }
+
+    /* USER CODE END ProgramemodeTask */
+}
+
+
+
+
+
+

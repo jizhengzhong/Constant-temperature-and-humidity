@@ -1,0 +1,308 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file    stm32f1xx_it.c
+  * @brief   Interrupt Service Routines.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "stm32f1xx_it.h"
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN TD */
+
+/* USER CODE END TD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+//  extern  uint8_t Rebuff[5] ;
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
+/* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_adc1;
+extern ADC_HandleTypeDef hadc1;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+extern TIM_HandleTypeDef htim1;
+
+/* USER CODE BEGIN EV */
+
+extern  void prvvTIMERExpiredISR(void);
+extern  void prvvUARTTxReadyISR(void);
+extern  void prvvUARTRxISR(void);
+/* USER CODE END EV */
+
+/******************************************************************************/
+/*           Cortex-M3 Processor Interruption and Exception Handlers          */
+/******************************************************************************/
+/**
+  * @brief This function handles Non maskable interrupt.
+  */
+void NMI_Handler(void)
+{
+    /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+
+    /* USER CODE END NonMaskableInt_IRQn 0 */
+    /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+    while (1) {
+    }
+
+    /* USER CODE END NonMaskableInt_IRQn 1 */
+}
+
+/**
+  * @brief This function handles Hard fault interrupt.
+  */
+void HardFault_Handler(void)
+{
+    /* USER CODE BEGIN HardFault_IRQn 0 */
+
+    /* USER CODE END HardFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+        /* USER CODE END W1_HardFault_IRQn 0 */
+    }
+}
+
+/**
+  * @brief This function handles Memory management fault.
+  */
+void MemManage_Handler(void)
+{
+    /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+
+    /* USER CODE END MemoryManagement_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+        /* USER CODE END W1_MemoryManagement_IRQn 0 */
+    }
+}
+
+/**
+  * @brief This function handles Prefetch fault, memory access fault.
+  */
+void BusFault_Handler(void)
+{
+    /* USER CODE BEGIN BusFault_IRQn 0 */
+
+    /* USER CODE END BusFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+        /* USER CODE END W1_BusFault_IRQn 0 */
+    }
+}
+
+/**
+  * @brief This function handles Undefined instruction or illegal state.
+  */
+void UsageFault_Handler(void)
+{
+    /* USER CODE BEGIN UsageFault_IRQn 0 */
+
+    /* USER CODE END UsageFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+        /* USER CODE END W1_UsageFault_IRQn 0 */
+    }
+}
+
+/**
+  * @brief This function handles Debug monitor.
+  */
+void DebugMon_Handler(void)
+{
+    /* USER CODE BEGIN DebugMonitor_IRQn 0 */
+    /* USER CODE END DebugMonitor_IRQn 0 */
+    /* USER CODE BEGIN DebugMonitor_IRQn 1 */
+    /* USER CODE END DebugMonitor_IRQn 1 */
+}
+
+/******************************************************************************/
+/* STM32F1xx Peripheral Interrupt Handlers                                    */
+/* Add here the Interrupt Handlers for the used peripherals.                  */
+/* For the available peripheral interrupt handler names,                      */
+/* please refer to the startup file (startup_stm32f1xx.s).                    */
+/******************************************************************************/
+
+/**
+  * @brief This function handles DMA1 channel1 global interrupt.
+  */
+void DMA1_Channel1_IRQHandler(void)
+{
+    /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
+    /* USER CODE END DMA1_Channel1_IRQn 0 */
+    HAL_DMA_IRQHandler(&hdma_adc1);
+    /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
+    /* USER CODE END DMA1_Channel1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles ADC1 and ADC2 global interrupts.
+  */
+void ADC1_2_IRQHandler(void)
+{
+    /* USER CODE BEGIN ADC1_2_IRQn 0 */
+    /* USER CODE END ADC1_2_IRQn 0 */
+    HAL_ADC_IRQHandler(&hadc1);
+    /* USER CODE BEGIN ADC1_2_IRQn 1 */
+    /* USER CODE END ADC1_2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM1 update interrupt.
+  */
+void TIM1_UP_IRQHandler(void)
+{
+    /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+    /* USER CODE END TIM1_UP_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim1);
+    /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+    /* USER CODE END TIM1_UP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+    /* USER CODE BEGIN TIM4_IRQn 0 */
+    /* USER CODE END TIM4_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim4);
+    /* USER CODE BEGIN TIM4_IRQn 1 */
+    HAL_TIM_IRQHandler(&htim4);
+
+    if (__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_FLAG_UPDATE)) {      // 更新中断标记被置位
+        __HAL_TIM_CLEAR_IT(&htim4, TIM_FLAG_UPDATE);		// 清除中断标记
+        prvvTIMERExpiredISR();			               // 通知modbus3.5个字符等待时间到
+    }
+
+    /* USER CODE END TIM4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+    /* USER CODE BEGIN USART2_IRQn 0 */
+    /* USER CODE END USART2_IRQn 0 */
+    HAL_UART_IRQHandler(&huart2);
+    /* USER CODE BEGIN USART2_IRQn 1 */
+    /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART3 global interrupt.
+  */
+void USART3_IRQHandler(void)
+{
+    /* USER CODE BEGIN USART3_IRQn 0 */
+    /* USER CODE END USART3_IRQn 0 */
+    HAL_UART_IRQHandler(&huart3);
+    /* USER CODE BEGIN USART3_IRQn 1 */
+
+    if (__HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_RXNE)) {
+        __HAL_UART_CLEAR_FLAG(&huart3, UART_FLAG_RXNE);			// 清除中断标记
+        prvvUARTRxISR();
+    }
+
+    if (__HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_TXE)) {
+        __HAL_UART_CLEAR_FLAG(&huart3, UART_FLAG_TXE);			// 清除中断标记
+        prvvUARTTxReadyISR();
+    }
+
+    /* USER CODE END USART3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM5 global interrupt.
+  */
+void TIM5_IRQHandler(void)
+{
+    /* USER CODE BEGIN TIM5_IRQn 0 */
+    static uint16_t MS = 0;
+    /* USER CODE END TIM5_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim5);
+    /* USER CODE BEGIN TIM5_IRQn 1 */
+    MS++;
+
+    if (MS >= 1000) {
+        MS = 0;
+			  SensorType.Parameter[HumidityID].DiffStableSecond++;
+			  SensorType.Parameter[TemperatureID].DiffStableSecond++;
+        SensorType.Parameter[HumidityID].Time_5min++;
+        SensorType.Parameter[TemperatureID].Time_5min++;
+        SensorType.Parameter[HumidityID].Time_HeatCycle++;
+        SensorType.Parameter[TemperatureID].Time_HeatCycle++;
+		  	SensorType.Compressor_Delay_time++;
+			  SensorType.DeforstingIntervalSecond++;
+			  if(SensorType.Flag.EnTime == 1 )
+		  	  SensorType.RunTime ++;
+    }
+				SensorType.PrintmilliSecond++;
+				SensorType.DeforstingmilliSecond++;
+    if (SensorType.FanOutTime++ >= 100) {
+        SensorType.FanOutTime  =  0;
+    }
+				ParTab[PAR_POS_Run_Stop_Command].uVal ? 
+      SensorType.FanOutTime <  ParTab[PAR_POS_FAN_OUT_PRECENT].uVal ?  Fan_ON : Fan_OFF
+		: Fan_OFF ;
+    SensorType.Parameter[HumidityID].Time_HeatCounter++;
+    SensorType.Parameter[TemperatureID].Time_HeatCounter++;
+    /* USER CODE END TIM5_IRQn 1 */
+}
+
+/* USER CODE BEGIN 1 */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    /* Prevent unused argument(s) compilation warning */
+    //  UNUSED(huart);
+    //	 HAL_UART_Receive_IT();
+    __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+    /* NOTE: This function should not be modified, when the callback is needed,
+             the HAL_UART_ErrorCallback could be implemented in the user file
+     */
+}
+
+
+
+/* USER CODE END 1 */
+
