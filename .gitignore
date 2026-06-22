@@ -1,4 +1,4 @@
-# Keil 编译产物
+﻿# Keil 编译产物
 Objects/
 Listings/
 *.axf
@@ -13,6 +13,18 @@ Listings/
 *.dep
 *.uvguix
 *.iex
+*.crf
+*.build_log.htm
+
+# Qoder / VS Code
+.qoder/
+.vscode/
+.clangd
+compile_commands.json
+
+# JLink 临时文件
+JLinkLog.txt
+JLinkSettings.ini
 
 # 系统垃圾文件
 .DS_Store
@@ -28,21 +40,10 @@ Output/
 
 # IAR 临时文件
 *.ewt
-*.bak
 *.wdproj
-*.dep
-*.build
-*.hex
 *.bin
-*.map
-*.o
 *.a
 *.elf
-*.hex
 *.ihex
 *.srec
 *.log
-
-# 系统垃圾
-.DS_Store
-Thumbs.db

@@ -1,0 +1,569 @@
+#include "contrl.h"
+#include "display.h"
+#include "ADCSample.h"
+#include "cmsis_os.h"
+
+PID_Para Temperature =
+{
+
+    0,//s16 AL;//超温偏差报警
+    0,//s16 FL;//电磁阀偏差报警
+    3,//s16 T; //控制周期
+    10,//s16 P; //比例带
+    200,//s16 I; //积分时间
+    300,//s16 d; //微分时间
+    0,//;s16 Pb1;//第一路热敏电阻零位调整
+    0,//s16 PK1;//满度调整
+	  0,//s16 OutValue;
+	  0,//s32 ISumVaule;
+	  0,//float Target;
+	  0,//float Measure;
+	  0,//float LastMeasure;
+	  0,//float DFVaule;
+	  6,//u8 gama;
+   	70,//u8    AR;
+	  0,//u8 Flag_DisIsum:1;  //禁止加热积分累积 
+    0,//u8 Time_HeatCycle	;
+	  0,//u8 Time_HeatCounter;
+	  Temp_Hea_State//  void (*HeatCallback)( HeatState  );
+};
+
+
+InterParaTwo  Temp_Ctrl={0};
+
+Para_Flag_STRUCT TEMP={0,0,0,0,0,0}; //温度位段变量
+
+CONTROL_STRUCT CONTROL={0,0,0,0,0,0}; //控制器位段变量
+
+
+u16 SP_Buffer[11];  //分段温控温度参数
+s16 ST_Buffer[12];  //分段温控时间参数
+
+//时间变量定义
+
+u16 TimMs_ModbusWait = 0; //通讯间隔时间
+u16 Time_Base1ms     = 0; //1毫秒时基
+u16 Time_Base1min    = 0; //1分钟时基
+u16 Time_5min        = 0; //5分钟计时
+u8  Time_PowerInital = 0; //上电初始化计时
+u16 Time_SpeakInital = 0; //上电蜂鸣器初始化计时
+
+u16 Time_Out = 0;        //通讯超时计时
+u32 Time_runsec     = 0; //编程模式运行时间秒
+u16 Time_runmin     = 0; //编程模式运行时间分
+u16 Time_ADCSwitch   = 0; //ADC转换延时计时
+
+
+s16 Temp_SetDiff;//与上一次设定值差值
+float temp_i_display;
+float temp_p_display;
+void PID_Calculate( PID_Para *vPID,InterParaTwo *ParaCtrl)
+{
+    s16 dedata;
+    float temp_a,temp_b;
+    float temp_c,temp_d;
+    s32 temp;
+	  s16 PVauleRun,DVauleRun;
+    
+    if(ParaCtrl->nod == 2)//程序控制模式
+    {
+        if(ST_Buffer[CONTROL.Ctrl_Step]>0)
+        {
+            dedata = vPID->Target - vPID->Measure;//设定值测量值之差
+            if(dedata >= 60)//60
+            {
+                PVauleRun = vPID->P/3;//得到积分的真实运行控制值
+                DVauleRun = vPID->d/2; //得到微分的真实运行控制值      
+            }
+            else if(dedata > 0)//0
+            {
+                temp = (s32)(60 - dedata)*2*vPID->P;
+                PVauleRun = vPID->P/3 + temp/180;
+                temp = (s32)(60 - dedata) * vPID->d;
+                DVauleRun = vPID->d/2 + temp/120;
+            }
+            else
+            {
+                PVauleRun=vPID->P; //得到积分的真实运行控制值
+                DVauleRun=vPID->d; //得到微分的真实运行控制值
+            }
+        }
+        else
+        {
+            PVauleRun=vPID->P; //得到积分的真实运行控制值
+            DVauleRun=vPID->d; //得到微分的真实运行控制值
+        }
+    }
+    else
+    {
+        PVauleRun=vPID->P; //得到积分的真实运行控制值
+        DVauleRun=vPID->d; //得到微分的真实运行控制值
+    }
+    
+    if((vPID->Target - vPID->Measure)>PVauleRun) //禁止微分
+    {
+        vPID->DFVaule    = vPID->Measure;      //微分先行后微分值
+        vPID->LastMeasure= vPID->Measure;  //上一次温度测量值  
+    }
+    else 
+    {
+        temp_c=(vPID->Measure - vPID->LastMeasure) * DVauleRun * vPID->gama;
+        temp_c=temp_c + DVauleRun * vPID->DFVaule;
+        temp_c=temp_c + vPID->Measure * vPID->T * vPID->gama;
+        temp_d=temp_c/(DVauleRun + vPID->T * vPID->gama);
+        if(temp_d>=7000)
+					vPID->DFVaule=7000; 
+        else if(temp_d<=-500) 
+					vPID->DFVaule=-500;
+        else 
+					vPID->DFVaule=temp_d;
+      
+        //四舍五入处理
+//        temp_a=(s16)temp_c%(Temp_DVauleRun+ParaTempPID.T*6);
+//        temp_b=(Temp_DVauleRun+ParaTempPID.T*6)/2;
+//        if(temp_a>=temp_b)
+//        {
+//            if(Temp_DFVaule>=0) 
+//							Temp_DFVaule=Temp_DFVaule+1;
+//						else
+//							Temp_DFVaule=Temp_DFVaule-1;
+//        }
+        vPID->LastMeasure=vPID->Measure;
+    }
+    /* 积分处理 */
+    if((vPID->Target - vPID->DFVaule)>=PVauleRun) //下比例带外
+    {
+			vPID->OutValue=1000; //全功率输出
+			vPID->ISumVaule=0; //积分累积清零 
+    }			
+    else
+    {
+				if((vPID->DFVaule - vPID->Target)>=PVauleRun) //上比例带外 
+				{
+						vPID->OutValue=0; //关闭输出
+						vPID->ISumVaule=0; //积分累积清零 
+				}
+				else //变速积分处理
+				{	
+						if(vPID->Measure < vPID->Target)
+						{
+								temp_a=PVauleRun/5; 
+								if(vPID->Target - vPID->Measure > temp_a) 
+								{
+										temp_b=PVauleRun; 
+										temp_c=vPID->Target - vPID->DFVaule; 
+										temp_b=temp_c*(temp_b-(vPID->Target - vPID->Measure))/(temp_b-temp_a);	
+								
+								}		
+								else temp_b=vPID->Target -  vPID->DFVaule;
+						}
+						else temp_b=vPID->Target - vPID->DFVaule;
+									
+									if(ParaCtrl->nod == 2)//程序控制模式
+									{
+											if(ST_Buffer[CONTROL.Ctrl_Step]==0)
+											{
+													if(!vPID->Flag_DisIsum) temp_b=0; //禁止积分 
+											}  
+									}
+									else
+									{
+											if(!vPID->Flag_DisIsum) temp_b=0; //禁止积分 
+									}
+					
+						temp_c=temp_b*1000;
+						temp_c=(temp_c*vPID->T)/PVauleRun;
+						vPID->ISumVaule=vPID->ISumVaule+temp_c; 
+						if(vPID->ISumVaule<0) 
+							vPID->ISumVaule=0;
+						temp_a=vPID->ISumVaule/vPID->I; 
+	temp_i_display=	 temp_a;		
+						if(temp_a>=1000) 
+						{
+								temp_a=1000; 
+							  vPID->ISumVaule=(s32)vPID->I*1000; 
+						}
+									
+						temp_c=(vPID->Target - vPID->DFVaule)*1000;
+						temp_b=temp_c/PVauleRun; 
+temp_p_display = 	temp_b;	
+						Time_ADCSwitch++;
+//printf("%d,%f,%f ,%f ,%f\r\n",Time_ADCSwitch,vPID->Measure,vPID->DFVaule,temp_p_display,temp_i_display);						
+
+						temp_b=temp_a+temp_b; 
+						if(temp_b<0) vPID->OutValue=0;
+						else if(temp_b>1000) vPID->OutValue=1000;
+						else vPID->OutValue=(s16)temp_b;
+				}
+    } 
+}
+
+
+
+
+//void Alarm(void)
+//{   
+////    if(Calibrate_flag)return;//校准界面不报警
+//    s16 set_temp=0;
+//    if((Temp_Display>=6300)||(Temp_Display<=-300))  
+//			TEMP.Flag_Over=1;
+//    else 
+//			TEMP.Flag_Over=0;   
+//    if((ParaTempCtrl.nod!=2) || ((ParaTempCtrl.nod==2)&&(CONTROL.Ctrl_Step >=1)))
+//    {   
+//        if(ParaTempCtrl.nod==2)
+//        {
+//            //SP_Buffer[0] = Temp_Display;
+//            if(ST_Buffer[CONTROL.Ctrl_Step]<0)
+//                set_temp = SP_Buffer[CONTROL.Ctrl_Step-1];
+//            else
+//                set_temp = SP_Buffer[CONTROL.Ctrl_Step];     
+//        }
+//        else
+//            set_temp = Temperature.Target;
+//        if(CONTROL.Flag_TempRun==1)//温度控制
+//        {
+//            if(Temp_Display>=(set_temp+ParaTempPID.AL+1)) TEMP.Flag_TempAlm=1;//超温报警
+//            if(Temp_Display<=(set_temp+ParaTempPID.AL-1)) TEMP.Flag_TempAlm=0;
+//            if(Temp_Display>=(set_temp+ParaTempPID.FL+1)) 
+//            {
+////                RELAY_ON;
+//                TEMP.Flag_TempDown=1;//降温
+//            }     
+//            if(Temp_Display<=(set_temp+ParaTempPID.FL-1)) 
+//            {
+////                RELAY_OFF;
+//                TEMP.Flag_TempDown=0;//关闭降温 
+//            }    
+//        }
+//        else
+//        {
+//            TEMP.Flag_TempAlm=0;
+//            TEMP.Flag_TempDown=0;//关闭降温 
+//        }
+//    }
+//    if(ParaTempCtrl.EP2==1)
+//    {
+//        if(Source_Display>ParaTempCtrl.SP2+10)//停止加热     
+//            TEMP.Flag_Protect = 1;//温度保护
+//        else if(Source_Display<ParaTempCtrl.SP2-10)//恢复加热
+//            TEMP.Flag_Protect = 0;//温度保护  
+//    }
+//    else TEMP.Flag_Protect = 0;//温度保护
+
+//    /* 温度溢出,通信故障,电机故障处理 */    //删除通信故障报警
+//    if(TEMP.Flag_TempOver)
+//    {
+//        //关断所有输出  
+//        if(TEMP.Flag_TempOver)
+//        {
+//            ALM_OFF; 
+//            HEAT_OFF;
+//            TEMP.Flag_HeatOut=0;
+//            TIME.Flag_TimeEnd=0;
+//            CONTROL.Flag_EnRun = 0;
+//            CONTROL.Flag_SpeedRun=0;
+//            CONTROL.Flag_TempRun=0;
+//            TEMP.Flag_TempDown=0;//关闭降温
+//        }
+//	return;
+//    }
+//    if((TEMP.Flag_TempAlm||TEMP.Flag_Protect||(CONTROL.Flag_TempRun==0))&&(AT_PID.Flag_AtNow<=3))
+//        ALM_OFF;//关断加热
+//    else 
+//        ALM_ON;//恢复加热  
+
+//    if((AT_PID.Flag_AtNow>3)||SAMPLE.Flag_TempSample) 
+//    {
+////        SPEAK_OFF;
+//        return;
+//    }
+//    
+////    if(SPEAK.Flag_TimeEnd||CONTROL.Code_End)//计时结束
+////    {
+////				if(SPEAK.Flag_DisSpeak) SPEAK_OFF;
+////				else
+////				{
+////						if(Time_SpeakOver>=60)
+////						{
+////											SPEAK_OFF; 
+////											SPEAK.Flag_TimeEnd=0;
+////											CONTROL.Code_End = 0;
+////						}
+////						else
+////						{
+////					if (Time_SpeakFlash<1000) SPEAK_ON;
+////								else if (Time_SpeakFlash<2000) SPEAK_OFF;
+////					else Time_SpeakFlash=0;	
+////						}
+////				}	
+////    }
+////    else
+////    {
+////        if(TEMP.Flag_TempAlm&&(CONTROL.Flag_TempDown==0))//超温报警且当前为升温
+////	{
+////	    if(SPEAK.Flag_DisSpeak) SPEAK_OFF;
+////	    else
+////	    {
+////					if(Time_SpeakFlash<1000) SPEAK_ON;
+////					else if(Time_SpeakFlash<2000) SPEAK_OFF;
+////					else Time_SpeakFlash=0;	
+////	    }
+////	}
+////	else 
+////        {
+////            SPEAK_OFF; 
+////            Time_SpeakFlash=0;
+////            SPEAK.Flag_DisSpeak=0;   
+////        }  
+////    }
+//}
+
+void Temp_Hea_State( u8 state)
+{
+	state == Heat_OFF  ? HEAT_OFF: HEAT_ON;
+
+}
+
+void HeatControl(PID_Para *PID_Parameter,InterParaTwo *ParaCtrl,
+								 Para_Flag_STRUCT *Para_Flag_Structment)
+{  
+    s32 temp1,temp2;
+    s16 temp_a;
+    s32 temp_b;
+    if(Para_Flag_Structment->Flag_Over||Para_Flag_Structment->Flag_Protect) //温度溢出标志，ji
+                                                                   //温度保护标志，1:停止加热 0:允许加热ji
+    {
+        PID_Parameter->DFVaule=PID_Parameter->Measure; //微分先行后微分值
+        PID_Parameter->LastMeasure=PID_Parameter->Measure;//上一次温度测量值
+        return;
+    }
+    if(!CONTROL.Flag_EnRun)         //控制器运行停止标志位
+    {
+
+    }
+    else
+    {
+        CONTROL.Flag_Cool = 0;
+    }
+    if(CONTROL.Flag_TempRun)  ////控制器停止温度控制标志位
+    {
+        if(Temp_Ctrl.nod == 2)//程序控制模式
+        {
+//            TIME.Flag_EnTime=0;  //允许计时标志位 
+//            TIME.Flag_TimeEnd=0; //计时结束标志位 
+            if(SP_Buffer[CONTROL.Ctrl_Step]>=SP_Buffer[CONTROL.Ctrl_Step-1])//升温
+                CONTROL.Flag_TempDown = 0;  //控制器降温标志
+            else CONTROL.Flag_TempDown = 1;       
+            if(ST_Buffer[CONTROL.Ctrl_Step] == 0)// ST=0:正常PID控制达到目标温度
+            {
+                if(Time_runmin >9999)Time_runmin=9999;
+                      PID_Parameter->Target = SP_Buffer[CONTROL.Ctrl_Step];
+                if(CONTROL.Flag_TempDown==0)//升温
+                {
+                    if(Temp_Display >= PID_Parameter->Target )//达到目标，值进入下一步控制
+                    {
+                        CONTROL.Ctrl_Step++;
+                        Time_runsec = 0;//编程模式运行时间秒
+                        Time_runmin = 0;//编程模式运行时间分
+                    }
+                }
+                else//降温
+                {
+                    if(Temp_Display <= PID_Parameter->Target )//达到目标，值进入下一步控制
+                    {
+                        CONTROL.Ctrl_Step++;
+                        Time_runsec = 0;//编程模式运行时间秒
+                        Time_runmin = 0;//编程模式运行时间分
+                    }
+                }
+            }
+            else if(ST_Buffer[CONTROL.Ctrl_Step] == -1)//ST=-1:以上一段温度继续运行
+            {
+                if(Time_runmin >9999)Time_runmin=9999;
+                    PID_Parameter->Target  = SP_Buffer[CONTROL.Ctrl_Step-1];
+            }
+            else if(ST_Buffer[CONTROL.Ctrl_Step] == -2)//ST=-2:运行到此段结束
+            {
+                CONTROL.Flag_EnRun = 0;
+                CONTROL.Flag_TempRun = 0;
+                CONTROL.Code_End = 1;
+                CONTROL.Ctrl_Step = 1;
+            }
+            else if(ST_Buffer[CONTROL.Ctrl_Step] > 0) //ST>0:表示该段温控时间
+            {
+                if(Temp_Ctrl.Cnd == 1)//温度到达目标值，进入下一段控制
+                {
+                    if(Time_runmin >9999)Time_runmin=9999;
+                    if(SP_Buffer[CONTROL.Ctrl_Step]>=SP_Buffer[CONTROL.Ctrl_Step-1])//升温
+                    {
+                        if(Temp_Display >= SP_Buffer[CONTROL.Ctrl_Step])//达到目标，值进入下一步控制 
+                        {
+                            CONTROL.Ctrl_Step++;
+                            Time_runsec = 0;//编程模式运行时间秒
+                            Time_runmin = 0;//编程模式运行时间分
+                        }
+                    }
+                    else//降温
+                    {
+                        if(Temp_Display <= SP_Buffer[CONTROL.Ctrl_Step])//达到目标，值进入下一步控制 
+                        {
+                            CONTROL.Ctrl_Step++;
+                            Time_runsec = 0;//编程模式运行时间秒
+                            Time_runmin = 0;//编程模式运行时间分
+                        }
+                    }  
+                }
+                if(Time_runmin >= ST_Buffer[CONTROL.Ctrl_Step])//运行时间到
+                {   
+                    if(Temp_Ctrl.Cnd == 0)//时间到达目标值，进入下一段控制
+                    {
+                        PID_Parameter->Target  = SP_Buffer[CONTROL.Ctrl_Step];//目标温度
+                        CONTROL.Ctrl_Step++;
+                        Time_runsec = 0;//编程模式运行时间秒
+                        Time_runmin = 0;//编程模式运行时间分
+                    }   
+                    else
+                        PID_Parameter->Target  = SP_Buffer[CONTROL.Ctrl_Step];//目标温度
+                }
+                else//运行时间未到
+                {
+                    if(ST_Buffer[CONTROL.Ctrl_Step]>2000)//分钟计时
+                    {
+                        temp1=(s32)(SP_Buffer[CONTROL.Ctrl_Step]-SP_Buffer[CONTROL.Ctrl_Step-1])*Time_runmin;
+                        temp1=temp1/ST_Buffer[CONTROL.Ctrl_Step];
+                        PID_Parameter->Target =SP_Buffer[CONTROL.Ctrl_Step-1]+temp1;	
+                    }
+                    else//换算成秒
+                    { 
+                        temp2=(s32)ST_Buffer[CONTROL.Ctrl_Step]*60; //换算成秒
+                        if (temp2>=Time_runsec)//运行时间未到
+                        {
+                            temp1=(s32)(SP_Buffer[CONTROL.Ctrl_Step]-SP_Buffer[CONTROL.Ctrl_Step-1])*Time_runsec;
+                            temp1=temp1/temp2;
+                            PID_Parameter->Target =SP_Buffer[CONTROL.Ctrl_Step-1]+temp1;
+                        } 
+                    }
+                }         
+            }
+        }
+        else//非编程模式下
+        {   
+            if(Temp_Display <= PID_Parameter->Target )
+                CONTROL.Flag_TempDown=0;  //控制器降温标志
+            if(CONTROL.Flag_EnRun==0)
+            {
+                Time_5min=0;
+                PID_Parameter->Flag_DisIsum = 0;//禁止积分
+            }
+//            PID_Parameter->Target  = Temp_Set;//目标温度
+            Time_runsec = 0;//编程模式运行时间秒
+            Time_runmin = 0;//编程模式运行时间分
+        }   
+    }
+    //禁止积分处理
+    if(Time_5min>180) 
+    {
+        Time_5min =400;
+        PID_Parameter->Flag_DisIsum = 1;  //禁止加热积分累积  
+    }
+    //溢出、定时结束后停止温控、禁止温度控制时关断加热  //自整定标志位
+    if(Para_Flag_Structment->Flag_Over||((CONTROL.Flag_TempRun==0)))//温度溢出或停止温控
+    { 
+			  PID_Parameter->HeatCallback(Heat_OFF);
+        Para_Flag_Structment->Flag_HeatOut=0;
+        
+        //PID控制赋初值
+        Temp_SetDiff = 0;
+        Time_5min=0;//禁止积分计时清零
+        PID_Parameter->Flag_DisIsum=0; 
+	      PID_Parameter->ISumVaule=0;    
+        PID_Parameter->DFVaule=PID_Parameter->Measure; 
+        PID_Parameter->LastMeasure=PID_Parameter->Measure; 
+        
+	      return;	
+    }
+
+    
+        if(PID_Parameter->Time_HeatCycle >= PID_Parameter->T)//加热一个周期   ParaTempPID.T = 5;   //控制周期
+        {
+						PID_Parameter->Time_HeatCycle=0;   //Time_HeatCycle  加热控制周期计时
+						PID_Parameter->Time_HeatCounter=0;	//Time_HeatCounter 加热控制时间计时
+
+            //输出功率控制
+             PID_Calculate( PID_Parameter,ParaCtrl);
+            if(Temp_SetDiff>=5||Temp_SetDiff<=-5)
+								{
+									Time_5min=0;
+								  PID_Parameter->Flag_DisIsum=0;
+								  Temp_SetDiff=0;
+								}//设定值变化超5，禁止积分 
+								
+            temp_a=PID_Parameter->OutValue*PID_Parameter->T;//PID输出值*控制周期
+            temp_b=temp_a*PID_Parameter->AR*0.01;//乘积*功率
+            PID_Parameter->OutValue=(s16)temp_b;
+        }   
+        else
+        { 
+							if(Para_Flag_Structment->Flag_Alm) 
+										{
+											 PID_Parameter-> HeatCallback(Heat_OFF);
+												Para_Flag_Structment->Flag_HeatOut=0;
+										} 
+									else
+									{
+											if( PID_Parameter->Time_HeatCounter < PID_Parameter->OutValue )
+														{
+
+															  PID_Parameter->	HeatCallback(Heat_ON);
+																Para_Flag_Structment->Flag_HeatOut=1;
+														}
+											else 
+														{
+															 PID_Parameter-> HeatCallback(Heat_OFF);
+																Para_Flag_Structment->Flag_HeatOut=0;
+														}
+								  }
+        }	
+
+}
+
+void Para_PID_Update(void)
+{
+  Temperature.P = ParTab[PAR_POS_P_SET ].uVal;
+	Temperature.I = ParTab[PAR_POS_I_SET ].uVal;
+	Temperature.d = ParTab[PAR_POS_D_SET ].uVal;
+	Temperature.AR = ParTab[PAR_POS_AR_SET ].uVal;
+	Temperature.T = ParTab[PAR_POS_T_SET ].uVal;
+}
+
+void Fan_Ctrl(void)
+{
+			RunFlow.FanOutMs    < ParUnSaved[PAR_POS_FAN_AR ].uVal ? Fan_OFF: Fan_ON ;
+		if(ParTab[PAR_POS_Run_Stop_Command].uVal == 1)
+		{
+			if(Temperature.Measure < ParTab[PAR_POS_UNLOCK_TEMP ].uVal && RunFlow.StateParameter.KeepWarmPoint != 1)
+				Lock_PowerOFF;
+		}
+		else
+			{ 
+				if( RunFlow.Err.ErrorFlag == 0)
+				Temperature.Measure > ParTab[PAR_POS_UNLOCK_TEMP ].uVal ? Lock_PowerOFF:Lock_PowerON;
+			}
+}
+
+
+ void CtrlTask(void *argument)
+{
+  /* USER CODE BEGIN CtrlTask */
+
+  /* Infinite loop */
+  for(;;)
+  {
+	if (ParTab[PAR_POS_WATER_F0_SWITCH].uVal == 1)
+    F0_Calculation();
+		Fan_Ctrl();
+    osDelay(1);
+  }
+  /* USER CODE END CtrlTask */
+}

@@ -1,0 +1,618 @@
+#include "appmange.h"
+#include "main.h"
+#include "cmsis_os.h"
+#include "flow.h"
+#include "math.h"
+#include "task.h"
+#include "rtc.h"
+
+manager RunFlow;
+void FunStopState(unsigned char evenId, manager *pFlowPcb) ;
+void FunErr1AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr2AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr3AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr4AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr5AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr8AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr9AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr11AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+void FunErr12AlarmCheck(unsigned char evenId, manager *pFlowPcb);
+
+T_ACT_FUN g_EvFunList[] = {
+    {EV_StopState,      FunStopState},
+    { EV_E1ALARM,      FunErr1AlarmCheck },
+    { EV_E2ALARM,      FunErr2AlarmCheck },
+    { EV_E3ALARM,      FunErr3AlarmCheck },
+    { EV_E4ALARM,      FunErr4AlarmCheck },
+    { EV_E5ALARM,      FunErr5AlarmCheck },
+    { EV_E9ALARM,      FunErr9AlarmCheck },
+    { EV_E11ALARM,      FunErr11AlarmCheck },
+    { EV_E12ALARM,      FunErr12AlarmCheck },
+};
+
+void eventHandleEntry(unsigned char EvenId)
+{
+    g_EvFunList[EvenId].ActFun(EvenId, &RunFlow);
+}
+
+void Init(void)
+{
+    RunFlow.flow_state =  WORK_PROGRAM_FLOW_STATE_STANDBY;
+    CONTROL.Flag_EnRun = 0;
+    CONTROL .Flag_TempRun = 0;
+    RunFlow.CurveState = HeatOFF;
+    RunFlow.StateParameter.ReachSetPoint = 0;
+    RunFlow.StateParameter.KeepWarmPoint = 0;
+    ParTab[PAR_POS_Run_Stop_Command].uVal = 0;
+    RunFlow.CurveState = HeatOFF;
+    RunFlow.SteriCount = ParTab[PAR_POS_STERI_COUNT_CORRECT].uVal;
+    RunFlow.Err.E1 = 0;
+    RunFlow.Err.E2 = 0;
+    RunFlow.Err.E3 = 0;
+    RunFlow.Err.E4 = 0;
+    RunFlow.Err.E5 = 0;
+    RunFlow.Err.E8 = 0;
+    RunFlow.Err.E9 = 0;
+    RunFlow.Err.E11 = 0;
+    RunFlow.Err.E12 = 0;
+    RunFlow.Err.ErrorFlag = 0;
+    RellayCtrl(RelayOFF);
+    ParUnSaved[PAR_POS_FAN_AR ].uVal = 0;
+    RunFlow.BalanceFlag = 0;
+}
+
+void FunStopState(unsigned char evenId, manager *pFlowPcb)
+{
+    if (ParTab[PAR_POS_Run_Stop_Command].uVal == 0) {
+        if (RunFlow.Err.ErrorFlag == 0) {
+            Temperature.Measure > ParTab[PAR_POS_UNLOCK_TEMP ].uVal ? Lock_PowerOFF : Lock_PowerON;
+        }
+    }
+}
+
+
+void FunErr1AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+    float temp;
+    temp = pFlowPcb->StateParameter.DryStartFlag != 1 ?  pFlowPcb->DisplaySteam : pFlowPcb->DisplayObject ;
+
+    if (temp > 141) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E1 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 1;
+        }
+    } else {
+        if (pFlowPcb->Err.E1 != ERROR_FLAG_ENABLE) {
+            ErrorCheck = 0;
+        }
+    }
+}
+
+void FunErr2AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (pFlowPcb->DisplayWater > 141) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E1 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 2;
+        }
+    } else {
+        if (pFlowPcb->Err.E2 != ERROR_FLAG_ENABLE) {
+            ErrorCheck = 0;
+        }
+    }
+}
+
+void FunErr3AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (Dry_Protect_Check == 1) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E3 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 3;
+        }
+    } else {
+        if (pFlowPcb->Err.E3 != ERROR_FLAG_ENABLE) {
+            ErrorCheck = 0;
+        }
+    }
+}
+
+void FunErr4AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    if (ParTab[PAR_POS_Run_Stop_Command].uVal == 1 &&  pFlowPcb->RunTime > 4 * 3600  &&
+            pFlowPcb->flow_state < WORK_PROGRAM_FLOW_STATE_STERI   &&
+            pFlowPcb->flow_state >= WORK_PROGRAM_FLOW_STATE_HEAT1) {
+        pFlowPcb->Err.E4 = ERROR_FLAG_ENABLE;
+        pFlowPcb->Err.ErrorFlag = 4;
+    }
+}
+
+void FunErr5AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (pFlowPcb->flow_state <  WORK_PROGRAM_FLOW_STATE_DRAIN &&  pFlowPcb->DisplayWater > 120 && pFlowPcb->Pressure < 5
+            && ParTab[PAR_POS_Run_Stop_Command].uVal == 1) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E5 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 5;
+        }
+    } else {
+        if (pFlowPcb->Err.E5 != ERROR_FLAG_ENABLE) {
+            ErrorCheck = 0;
+        }
+    }
+}
+
+void FunErr8AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (pFlowPcb->DisplayObject > 141) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E8 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 8;
+        }
+    } else {
+        ErrorCheck = 0;
+    }
+}
+
+void FunErr9AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (pFlowPcb->Pressure > 275) {
+        ErrorCheck++;
+
+        if (ErrorCheck > 3) {
+            Init();
+            pFlowPcb->Err.E9 = ERROR_FLAG_ENABLE;
+            pFlowPcb->Err.ErrorFlag = 9;
+        }
+    } else {
+        if (pFlowPcb->Err.E9 != ERROR_FLAG_ENABLE) {
+            ErrorCheck = 0;
+        }
+    }
+}
+
+void FunErr11AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (pFlowPcb->StateParameter.ReachSetPoint  == 1) {
+        if (fabs(pFlowPcb->DisplaySteam - Procedure.SetPoint) > ParTab[PAR_POS_TEMP_ERROR_E11].uVal * 0.1 \
+                && pFlowPcb->StateParameter.KeepWarmPoint != 1 && ParTab[PAR_POS_Run_Stop_Command].uVal == 1) {
+            ErrorCheck++;
+
+            if (ErrorCheck > 3) {
+                Init();
+                pFlowPcb->Err.E11 = ERROR_FLAG_ENABLE;
+                pFlowPcb->Err.ErrorFlag = 11;
+            }
+        } else {
+            if (pFlowPcb->Err.E11 != ERROR_FLAG_ENABLE) {
+                ErrorCheck = 0;
+            }
+        }
+    }
+}
+
+void FunErr12AlarmCheck(unsigned char evenId, manager *pFlowPcb)
+{
+    static unsigned char ErrorCheck = 0;
+
+    if (ParTab[PAR_POS_Run_Stop_Command].uVal == 1) {
+        if (Door_State_Check == DoorOpen_State   && Temperature.Measure > ParTab[PAR_POS_UNLOCK_TEMP ].uVal) {
+            ErrorCheck++;
+
+            if (ErrorCheck > 3) {
+                Init();
+                pFlowPcb->Err.E12 = ERROR_FLAG_ENABLE;
+                pFlowPcb->Err.ErrorFlag = 12;
+            }
+        } else {
+            if (pFlowPcb->Err.ErrorFlag != 12) {
+                ErrorCheck = 0;
+            }
+        }
+    }
+}
+
+
+
+void RellayCtrl(RelaySt State)
+{
+    State == RelayOFF ?   CFK_POWER_OFF : CFK_POWER_ON ;
+}
+
+
+void flow_control(manager *pFlowPcb)
+{
+    char i = 0;
+	  static unsigned int TimeStart;
+    char *pType[6] = {"Steri start", "Steri start", "Melt start", "Steri start", "Steri start", "Preheat start"};
+
+    switch (pFlowPcb->flow_state) {
+    case WORK_PROGRAM_FLOW_STATE_HEAT1://��������1--����1
+        RunFlow.f0_value = 0;
+        DrainOFF;
+        Lock_PowerOFF;
+
+        if (Procedure.type == Melt) {
+            Temperature.Target = Procedure.steri;
+            RunFlow.CurveState = HeatState1;
+            PrintString("Heat2 start") ;
+
+            if (Temperature.Measure >= Procedure.steri - 10) {
+                pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_HEAT2;
+                pFlowPcb->state = FLOW_STATE_HEAT2_6;
+                RunFlow.CurveState = HeatState2;
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+            }
+        } else if (Temperature.Measure >= ParTab[PAR_POS_TEMP_BOIL].uVal - 3) {
+            pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_HEAT2;
+            pFlowPcb->state = FLOW_STATE_HEAT2_1;
+					  TimeStart = RunFlow.RunTime;
+            printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                   sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+        }
+        RellayCtrl(RelayOFF);
+        RunFlow.CurveState = HeatState1;
+        Temperature.Target = Procedure.steri;
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_HEAT2://��������2--����2
+        switch (pFlowPcb->state) {
+        case FLOW_STATE_HEAT2_1:
+            if (Temperature.Measure >= ParTab[PAR_POS_TEMP_BOIL].uVal + 7||RunFlow.RunTime-TimeStart>600) {
+                Temperature.Target = 0.1;
+                RellayCtrl(RelayOFF);
+                pFlowPcb->state = FLOW_STATE_HEAT2_2;
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+            }   else {
+                RellayCtrl(RelayON);
+            }
+
+            break;
+
+        case FLOW_STATE_HEAT2_2:
+            if (Temperature.Measure  <= ParTab[PAR_POS_TEMP_BOIL].uVal) {
+                Temperature.Target = Procedure.steri;
+                RellayCtrl(RelayON);
+                pFlowPcb->state = FLOW_STATE_HEAT2_3;
+						    TimeStart = RunFlow.RunTime;
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+            } else {
+                RellayCtrl(RelayOFF);
+            }
+
+            break;
+
+        case FLOW_STATE_HEAT2_3:
+            if (Temperature.Measure >= ParTab[PAR_POS_TEMP_BOIL].uVal + 7||RunFlow.RunTime-TimeStart>600) {
+                Temperature.Target = 0.1;
+                RellayCtrl(RelayOFF);
+                pFlowPcb->state = FLOW_STATE_HEAT2_4;
+                taskENTER_CRITICAL();
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+                taskEXIT_CRITICAL();
+            } else {
+                RellayCtrl(RelayON);
+            }
+
+            break;
+
+        case FLOW_STATE_HEAT2_4:
+            if (Temperature.Measure <= ParTab[PAR_POS_TEMP_BOIL].uVal + 4) {
+                Temperature.Target = Procedure.steri;
+                RellayCtrl(RelayON);
+                pFlowPcb->state = FLOW_STATE_HEAT2_5;
+                RunFlow.BalanceFlag = 0;
+                RunFlow.CurveState = HeatState2;
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+            }    else {
+                RellayCtrl(RelayOFF);
+            }
+
+            break;
+
+        case FLOW_STATE_HEAT2_5:
+            switch (RunFlow. BalanceFlag) {
+            case 0 :
+                if (Temperature.Measure - Temperature.Target > -1) {
+                    RunFlow.SteriMinute  = 0;
+                    RunFlow.BalanceFlag = 1;
+                }
+
+                break;
+
+            case 1:
+                if (RunFlow.SteriMinute >  Procedure.balance_time) {
+                    pFlowPcb->state = FLOW_STATE_HEAT2_6;
+                    Temperature.Target = Procedure.steri + 0.3;
+                    RunFlow.BalanceFlag = 0;
+                }
+                break;
+            }
+
+            break;
+
+        case FLOW_STATE_HEAT2_6:
+            if (Temperature.Measure - Procedure.SetPoint >= 0.1 && Temperature.Measure - Procedure.SetPoint <= 1) {
+                pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_STERI;
+                pFlowPcb->StateParameter.ReachSetPoint = 1 ;
+
+                if (Procedure.type == Liquid) {
+                    pFlowPcb->StateParameter.KeepWarmPoint == 1 ? \
+                    (RunFlow.CurveState = KeepWarmState) : (RunFlow.CurveState = BalanceState);
+                } else if (Procedure.type == Melt) {
+                    pFlowPcb->StateParameter.KeepWarmPoint == 1 ? \
+                    (RunFlow.CurveState = KeepWarmState) : (RunFlow.CurveState = MeltState);
+                } else if (Procedure.type == PreHeat) {
+                    RunFlow.CurveState = PreHeatBlance;
+                } else {
+                    RunFlow.CurveState = BalanceState	;
+                }
+
+                RunFlow.SteriMinute  = 0;
+                printf("------------------------\r\n");
+                RunFlow.CurveState == KeepWarmState ? PrintString("keep warm start") : PrintString(pType[Procedure.type]);
+                RunFlow.TenSecond	= 0;
+                RunFlow.StateParameter.TenSecondFlag = 0;
+                RunFlow.LastSecond	=		sTime.Seconds;
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+            }
+
+            if (Temperature.Measure < ParTab[PAR_POS_UNLOCK_TEMP].uVal) {
+                Lock_PowerON;
+            } else {
+                Lock_PowerOFF;
+            }
+
+            break;
+        }
+
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_STERI://��������4
+        pFlowPcb->RunTime = 0;
+
+        if (RunFlow.SteriMinute >= Procedure.steri_time) {
+            if ((Procedure.type == Melt || Procedure.type == Liquid) && Procedure.SteriTimes > 1) {
+                Temperature.Target    =  Procedure.mode.keepwarm;
+                Procedure.SetPoint       =  Procedure.mode.keepwarm;
+                Procedure.steri_time  =  Procedure.dry_kwarm_time.keepwarm;
+                RunFlow.SteriMinute   =  0;
+                pFlowPcb->flow_state  =  WORK_PROGRAM_FLOW_STATE_EXHAUST;
+                pFlowPcb->state       =  FLOW_STATE_EXHAUST_3;
+                RunFlow.CurveState    =  ExhaustState;
+                pFlowPcb->StateParameter.ReachSetPoint = 0 ;
+                pFlowPcb->StateParameter.KeepWarmPoint = 1;
+            } else {
+                pFlowPcb->flow_state  = ParTab[PAR_POS_FUNCTION_SET].uVal & (1 << DRY_FUNCTION_BIT0) ? WORK_PROGRAM_FLOW_STATE_DRAIN :
+                                        WORK_PROGRAM_FLOW_STATE_EXHAUST;
+                pFlowPcb->state      	=  FLOW_STATE_EXHAUST_1;
+                RunFlow.SteriMinute		=  0;
+                pFlowPcb->StateParameter.ReachSetPoint = 0 ;
+            }
+
+            printf("------------------------\r\n");
+            PrintString("Exhaust start") ;
+            RunFlow.StateParameter.TenSecondFlag = 0;
+        } else {
+            if (RunFlow.StateParameter.TenSecondFlag == 1 && RunFlow.LastSecond	==	sTime.Seconds) {
+                printf("%d:%d:%d %4.1f%4.1dkpa\r\n", sTime.Hours, sTime.Minutes, \
+                       sTime.Seconds, Temperature.Measure, RunFlow.Pressure);
+                RunFlow.StateParameter.TenSecondFlag = 0;
+                HEAT_OFF;
+                RunFlow.TenSecond = 0;
+            }
+        }
+
+        break;
+
+    case 	WORK_PROGRAM_FLOW_STATE_DRAIN:
+        DrainON;
+        HEAT_OFF;
+        Temperature.Target    =  Procedure.mode.dry_temp + 0.3;
+        Procedure.steri_time  =  Procedure.dry_kwarm_time.dry_temp;
+        RunFlow.StateParameter.DryStartFlag  = 1;
+
+        if (RunFlow.Pressure < 10.0) {
+            AirAdmissionON ;
+            RellayCtrl(RelayON);
+            RunFlow.CurveState = HeatState2;
+            ParTab[PAR_POS_OBJECT_SENSOR_CALIBRATION].iVal = (s16)(RunFlow.DisplaySteam - RunFlow.DisplayObject) * 10;
+        } else {
+            RunFlow.CurveState = ExhaustState;
+        }
+
+        if (Temperature.Measure - Temperature.Target >= 0.1 && Temperature.Measure - Temperature.Target <= 1) {
+            pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_DRY;
+            RunFlow.SteriMinute		=  0;
+            RunFlow.CurveState = DryBlance;
+        }
+
+        break;
+
+    case  	WORK_PROGRAM_FLOW_STATE_DRY:
+        if (RunFlow.SteriMinute >= Procedure.steri_time) {
+            pFlowPcb->flow_state  = WORK_PROGRAM_FLOW_STATE_EXHAUST;
+            pFlowPcb->state = FLOW_STATE_EXHAUST_2;
+            RunFlow.StateParameter.DryStartFlag = 0;
+            RunFlow.SteriMinute		=  0;
+            pFlowPcb->StateParameter.ReachSetPoint = 0 ;
+            Temperature.Target = 0;
+            Dry_OFF;
+            RunFlow.CurveState = ExhaustState;
+        }
+
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_EXHAUST://��������5--��������
+        pFlowPcb->RunTime = 0;
+        RunFlow.FanOutMs    >= ParUnSaved[PAR_POS_FAN_AR ].uVal ? Fan_OFF : Fan_ON ;
+
+        switch (pFlowPcb->state) {
+        case FLOW_STATE_EXHAUST_1:
+            pFlowPcb->StateParameter.KeepWarmPoint = 0;
+            RunFlow.CurveState = ExhaustState;
+            Temperature.Target  = 0;
+
+            if (Procedure.exhmode) {
+                if (Temperature.Measure <= Procedure.exhaust) {
+                    RellayCtrl(RelayON);
+                    osDelay(Procedure.exhmode * 800);
+                    RellayCtrl(RelayOFF);
+                    osDelay(1000);
+                }
+
+                if (Temperature.Measure <= ParTab[PAR_POS_TEMP_BOIL].uVal) {
+                    RellayCtrl(RelayOFF);
+                    pFlowPcb->state = FLOW_STATE_EXHAUST_2;
+                }
+            } else {
+                if (Temperature.Measure <=  Procedure.exhaust) {
+                    RellayCtrl(RelayOFF);
+                    pFlowPcb->state = FLOW_STATE_EXHAUST_2;
+                }
+            }
+
+            break;
+
+        case FLOW_STATE_EXHAUST_2:
+            if (Temperature.Measure <= ParTab[PAR_POS_TEMP_BOIL].uVal) {
+                RellayCtrl(RelayOFF);
+                pFlowPcb->state = FLOW_STATE_EXHAUST_3;
+            }
+
+            break;
+
+        case FLOW_STATE_EXHAUST_3:
+            if (Temperature.Measure < ParTab[PAR_POS_UNLOCK_TEMP].uVal) {
+                Lock_PowerON;
+                AirAdmissionOFF;
+
+                if ((Procedure.type == Melt || Procedure.type == Liquid) && Procedure.SteriTimes > 1) {
+                    Procedure.SteriTimes-- ;
+                    pFlowPcb->flow_state  =  WORK_PROGRAM_FLOW_STATE_HEAT2;
+                    pFlowPcb->state       =  FLOW_STATE_HEAT2_6;
+                } else {
+                    pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_FINISH1;
+                }
+            } else  if (Temperature.Measure <= ParTab[PAR_POS_TEMP_BOIL].uVal) {
+                RellayCtrl(RelayOFF);
+            }
+        }
+
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_FINISH1://��������7--����1
+        for (i = 0 ; i < 3; i++) {
+            ALM_ON;
+            osDelay(1000);
+            ALM_OFF;
+            osDelay(1000);
+        }
+        RunFlow.CurveState = FinishState1;
+        pFlowPcb ->SteriCount++;
+        ParTab[PAR_POS_STERI_COUNT_CORRECT].uVal = ParReceive[PAR_POS_STERI_COUNT_CORRECT].uVal = pFlowPcb ->SteriCount;
+        pFlowPcb->flow_state = WORK_PROGRAM_FLOW_STATE_FINISH2;
+        pFlowPcb->leverlock = CHECK_LEVER_LOCK_FLAG;
+        printf("Finish\r\n");
+        PrintString("Finish Time\r\n") ;
+
+        if (ParTab[PAR_POS_WATER_F0_SWITCH].uVal == 1) {
+            printf("f0 value= %.1f\r\n", RunFlow.f0_value);    //��ӡF0ֵ
+        }
+
+        printf("------------------------\r\n");
+        printf("Result:   \r\n");
+        printf("------------------------\r\n");
+        printf("Operator:   \r\n");
+        printf("------------------------\r\n");
+        printf("           END          \r\n");
+        printf("------------------------\r\n");
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_FINISH2://��������8--����2
+        RunFlow.FanOutMs    >= ParUnSaved[PAR_POS_FAN_AR ].uVal ? Fan_OFF : Fan_ON ;
+        break;
+
+    case WORK_PROGRAM_FLOW_STATE_ERROR:
+        ALM_ON;
+        osDelay(1000);
+        ALM_OFF;
+        osDelay(10000);
+        break;
+
+    default:
+        break;
+    }
+}
+
+//UBaseType_t uxWords ;
+void APPTask(void *argument)
+{
+    /* USER CODE BEGIN APPTask */
+    //       	uint32_t flagdd;
+    /* Infinite loop */
+    for (;;) {
+        //    flagdd=osEventFlagsWait	(	MyStartStopEventHandle,
+        //												    0x00000001,
+        //												osFlagsWaitAny,
+        //												osWaitForever
+        //												);
+
+        //        		uxWords= uxTaskGetStackHighWaterMark(NULL);
+        for (char i = EV_StopState; i < EV_E12ALARM; i++) {
+            g_EvFunList[i].ActFun(i, &RunFlow) ;
+        }
+        flow_control(&RunFlow);
+        if (ParTab[PAR_POS_WATER_F0_SWITCH].uVal == 1) {
+            F0_Calculation();
+        }
+
+        if (Lock_State_Check == Unlock_State  && RunFlow.StateParameter.KeepWarmPoint != 1 &&
+                RunFlow.Err.E3 != ERROR_FLAG_ENABLE) {
+            ParTab[PAR_POS_Run_Stop_Command].uVal = 0;
+            ParReceive[PAR_POS_Run_Stop_Command].uVal  = 0;
+        }
+
+        osDelay(10);
+    }
+
+    /* USER CODE END APPTask */
+}
+
+
+
+
+

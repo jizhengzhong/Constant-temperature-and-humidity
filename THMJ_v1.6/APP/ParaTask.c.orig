@@ -1,0 +1,445 @@
+#include "main.h"
+#include "cmsis_os.h"
+#include "math.h"
+
+
+void CustomRunParaUpdata ( parameter *pRunPara );
+void LiquidRunParaUpdata ( parameter *pRunPara );
+void SolidRunParaUpdata ( parameter *pRunPara );
+void FabricRunParaUpdata ( parameter *pRunPara );
+void MeltRunParaUpdata ( parameter *pRunPara );
+void PreHeatRunParaUpdata( parameter *pRunPara );
+void FunStartStopCheck (manager *pFlowPcb);
+
+
+void (*pcRunParaUpdata[]) ( parameter *pRunPara ) ={ 
+	PreHeatRunParaUpdata,	FabricRunParaUpdata,	LiquidRunParaUpdata,
+	MeltRunParaUpdata,	SolidRunParaUpdata ,	CustomRunParaUpdata}; 
+
+	   parameter Procedure={0};
+
+    const partab_attr_type ParTabAttr[] = { {0x0000,PAR_VERSION_ID,PAR_VERSION_ID,PAR_VERSION_ID,"VERSIONID"},
+    {0x0000,0,800,0,"unlock"},              //1
+		{0x0000,0,1,0,"Updata"},                //2
+		{0x0000,0,1,0,"RunStop Command"},       //3
+		
+    {0x0001,0,1380,1213,"Custom Temp"},     //4
+    {0x0001,0,9999,20,"Custom Time"},       //5
+    {0x0001,100,1380,1000,"Custom Exhaust"},//6
+    {0x0001,0,10000,0,"Custom Exh mode"},   //7
+    {0x0000,0,1800,0,"Custom Blance Time"}, //8
+    {0x0001,0,1800,60,"Custom Dry Temp"},   //9
+    {0x0000,0,3600,220,"Custome Dry Time"}, //10
+		
+    {0x0000,110,1380,1210,"Liqu Temp"},     //11
+    {0x0000,0,9999,20,"Lique Time"},        //12
+    {0x0000,0,800,600,"Liqu Keep Warm"},    //13
+    {0x0001,0,9999,3600,"Liqu Warm Time"},  //14
+    {0x0000,0,60,15,"Liqu Blance Time"},    //15
+		
+		{0x0000,110,1380,1210,"Melt Temp"},     //16
+    {0x0000,0,9999,20,"Melt Time"},         //17
+    {0x0000,0,800,600,"Melt Keep Warm"},    //18
+    {0x0001,0,9999,3600,"Melt Warm Time"},  //19
+		
+    {0x0000,100,1380,1340,"Solid Temp"},    //20
+    {0x0000,0,9999,4,"Solid Time"},         //21
+    {0x0000,0,1200,1000,"Solid Exhau"},     //22
+    {0x0000,0,10,0,"Solid mode"},           //23
+    {0x0001,0,1500,140,"Solid Dry Temp"},   //24
+    {0x0001,0,1000,55,"Solid Dry Time"},    //25
+		
+    {0x0001,0,1380,126,"Fabr Temp"},        //26
+    {0x0000,0,9999,15,"Fabr Time"},         //27
+    {0x0001,0,1213,115,"Fabr Exhau"},       //28
+    {0x0000,0,10,0,"Fabr Mode"},            //29
+    {0x0000,100,3600,180,"Fabr Dry Temp"},  //30
+    {0x0000,0,9999,70,"Fabr Dry Time"},     //31
+    {0x0000,0,600,30,"Fabr Blance"},        //32
+		
+    {0x0001,0,5,2,"Program Type"},          //33
+    {0x0000,-500,500,0,"Object Calib"},     //34
+    {0x0000,-100,100,0,"Steam Calib"},      //35
+    {0x0000,-1000,1000,0,"Pressure Calib"}, //36
+		{0x0000,0,1,0,"Water Display"},         //37
+    {0x0000,0,120,100,"Boil Temp"},         //38
+    {0x0002,0,100,50,"E11 Temp"},			    	//39
+    {0x0002,0,32767,0,"Steri Count"},    		//40
+    {0x0002,0,9999,0,"Dry Function"},    	//41
+    {0x0002,0,999,5,"Temp Kp"}, 						//42
+    {0x0000,0,3600,120,"Temp Ki"},  				//43
+    {0x0001,0,3600,80,"Temp Kd"},   				//44
+    {0x0000,0,100,100,"Temp AR"},   				//45
+    {0x0000,1,50,5,"Temp T"},        				//46
+    {0x0000,0,100,100,"Dry AR"},     				//47
+		{0x0000,0,999,5,"Dry T"},        			  //48
+    {0x0000,0,999,50,"Dry P"},        			//49
+    {0x0001,1,3600,220,"Dry I"},     				//50
+    {0x0000,0,3600,100,"Dry D"},     				//51
+    {0x0000,0,3600,0,"Water Level"},     		//52
+    {0x0000,0,1,0,"F0 Function"},     			//53
+		{0x0000,60,95,80,"Unlock Temp"},     		//54
+		{0x0000,-100,100,0,"Water Calib"},  		//55
+		{0x0000,50,80,1,"Per_Temperature"},     //56
+	  {0x0000,0,6000,1,"Per_Time"},           //57
+		{0x0000,0,100,80,"Filter"},           //57
+    {0x0000,INT16_MIN,INT16_MAX,0,"END"},   //58
+
+		{0x0000,2008,2100,2024,"Current Year"}, //59
+		{0x0000,1,12,1,"Current Month"},        //60
+		{0x0000,1,31,1,"Current Day"},          //61
+		{0x0000,0,23,1,"Current Hour"},         //62
+		{0x0000,0,60,1,"Current Minute"},       //63
+	  {0x0000,0,60,1,"Current Second"},       //64
+		{0x0000,0,100,1,"FAN AR"},              //65
+		
+
+};
+void FunStartStopCheck (manager *pFlowPcb)
+{
+  static char LastPAR_POS_Run_Stop_Command;
+	if( ParTab[PAR_POS_Run_Stop_Command].uVal != LastPAR_POS_Run_Stop_Command )
+	{
+					ParTab[PAR_POS_UPDATE_TIME].uVal=0;
+					RellayCtrl( RelayOFF );	
+				if( ParTab[PAR_POS_Run_Stop_Command].uVal == 1 )
+				{
+					 pFlowPcb->RunTime = 0;
+					 TimeUpdate();
+					 Lock_PowerOFF;		
+					 PrintStart() ;
+					(*pcRunParaUpdata[ParTab[PAR_POS_RUN_PROGRAM_TYPE].uVal]) ( &Procedure ); 
+					printf("Set Time:%dmin\r\n",Procedure.steri_time);
+					printf("Set Temp:%dmin\r\n",Procedure.steri);
+					if(	Procedure.type == Melt || Procedure.type == Liquid )
+					{
+						   Procedure.SteriTimes = 2  ;
+							 pFlowPcb->flow_state =  WORK_PROGRAM_FLOW_STATE_HEAT1 ;
+							printf("Keep warm Time:%dmin\r\n",Procedure.mode.keepwarm);
+							printf("Keep warm Temp:%dmin\r\n",Procedure.dry_kwarm_time.keepwarm);
+					}
+					else if( Procedure.type == PreHeat)
+					{
+					   pFlowPcb->flow_state =  WORK_PROGRAM_FLOW_STATE_HEAT2 ;
+						 pFlowPcb->state      =  FLOW_STATE_HEAT2_5  ;
+						 Temperature.Target = Procedure.steri+0.3;
+						 RunFlow.CurveState = HeatState1;
+					} 
+					else
+					{
+//	         ParTab[PAR_POS_FUNCTION_SET].uVal  == 1  ?  ( Procedure.SteriTimes = 2 ) :  ( Procedure.SteriTimes = 1 );					
+				   pFlowPcb->flow_state =  WORK_PROGRAM_FLOW_STATE_HEAT1 ;
+
+					}										
+					 CONTROL.Flag_EnRun = 1;
+					 CONTROL .Flag_TempRun = 1;
+					 pFlowPcb->Err.ErrorFlag = 0;	
+					printf("------------------------\r\n");
+					printf("      Sa.Steam self      \r\n");
+					printf("------------------------\r\n");
+
+					PrintString("Heat1 start") ;
+					
+				}
+				else	
+				{	
+					 AirAdmissionOFF;
+				   ParTab[PAR_POS_UPDATE_TIME].uVal=1;
+					 pFlowPcb->flow_state =  WORK_PROGRAM_FLOW_STATE_STANDBY;
+					 CONTROL.Flag_EnRun = 0;
+					 CONTROL .Flag_TempRun = 0;
+					pFlowPcb->CurveState = HeatOFF;
+					RunFlow.StateParameter.DryStartFlag = 0;
+				}
+				LastPAR_POS_Run_Stop_Command =  ParTab[PAR_POS_Run_Stop_Command].uVal;
+	}
+		
+			
+}
+
+static void ParSave(uint16_t Pos)
+{
+    partab_type ParX;
+	  uint8_t rtn;
+    
+    if(Pos >= PAR_POS_END)
+        return;
+
+    do {
+        int32_t TimeOutCnt;
+        //写入数据
+				  I2C_EE_BufferWrite((uint8_t* )ParTab[Pos].uBytes, 2*Pos, 2);
+        //读回校验
+        ParX.uVal = ~ParTab[Pos].uVal;
+        TimeOutCnt = 5;
+        do {
+            osDelay(8);
+						  rtn = ee_ReadBytes( (uint8_t *) ParX.uBytes, 2*Pos, 2);
+				      if ( !rtn) 
+								{
+								 printf ("ParSave read fail!!!\r\n");
+									break;
+								}
+            TimeOutCnt--;
+            if(TimeOutCnt < 0)
+                break;
+        } while (1);
+        //校验成功退出
+        if(ParX.uVal == ParTab[Pos].uVal)
+				{
+					
+//					 printf ("ParX.uVal = %x\r\n",ParTab[Pos].uVal);
+            break;
+				}
+				else 
+							 printf ("ParX.uVal != ParTab[Pos].uVal!!!\r\n");
+    } while (1);
+
+}
+
+
+void ParSaveCheck(void) {
+    uint32_t Index;
+    
+    //前两个参数是ID和LK，从第3个参数开始存储
+    //检测到参数值变化就存储至EEPROM
+    for(Index = 4; Index< PAR_POS_END;Index++)
+    {
+        if (ParSaved[Index].uVal != ParReceive[Index].uVal)
+					{
+            ParSaved[Index].uVal = ParReceive[Index].uVal;
+            ParSave(Index);
+            break;
+          }
+    }
+}
+
+
+void ParLoad(void)
+{
+    partab_type * pTab1;
+    partab_type * pTab2;
+    uint32_t Index;
+	  uint8_t rtn;
+    
+    pTab1 = mymalloc(SRAMCCM,512+256);
+    pTab2 = mymalloc(SRAMCCM,512+256);
+    
+    if((NULL==pTab1) || (NULL == pTab2))
+        return;
+    
+    do {
+        int ErrSt;
+        
+        for(Index=0; Index<= PAR_POS_END; Index++)
+        {
+            pTab1[Index].uVal = ~pTab2[Index].uVal;
+        }
+					rtn = ee_ReadBytes( (uint8_t *) pTab1, 0,2*(PAR_POS_END+1));
+				  rtn = ee_ReadBytes( (uint8_t *) pTab2, 0,2*(PAR_POS_END+1));
+				      if ( !rtn) 
+								{
+//								 printf ("ParLoad read fail!!!\r\n");
+									break;
+								}
+        
+              ErrSt = 0;
+        for(Index=0; Index<= PAR_POS_END; Index++)
+        {
+            if(pTab1[Index].uVal != pTab2[Index].uVal )
+            {
+                ErrSt = 1;
+//									 printf ("ParLoad ErrSt = 1;!!!\r\n");
+                break;
+            }
+        }
+        
+        if(ErrSt == 0){
+            for(Index=0; Index<= PAR_POS_END; Index++)
+            {
+                ParTab[Index].uVal = pTab2[Index].uVal;
+                ParSaved[Index].uVal = ParReceive[Index].uVal = ParTab[Index].uVal;
+//                ParReadSt[Index] = 0;
+	//						printf ("ParLoad ParTab[Index].uVal=%d\r\n",ParTab[Index].uVal);
+            }
+            
+            break;
+        }
+        
+    } while (1);
+    
+    myfree(SRAMCCM,pTab1);
+    myfree(SRAMCCM,pTab2);
+}
+    /*****************************************************************************//*!
+*
+* @brief   system par init.
+*        
+* @param   none
+*
+* @return  none
+*
+* @ Pass/ Fail criteria: none
+*****************************************************************************/
+void SysParInit(void)
+{
+    //系统设定参数加载
+    ParLoad();
+//自整定功能注释掉
+//    ParTab[PAR_POS_COL_AT].iVal = 0;
+//    ParTab[PAR_POS_TEMP_AT].iVal = 0;
+    
+   if(ParTab[PAR_POS_VER_ID].uVal != PAR_VERSION_ID)
+    {
+        int Cnt;
+        Cnt = PAR_POS_END;
+        while(Cnt--){
+            ParTab[Cnt].iVal = ParTabAttr[Cnt].init;
+            ParSave(Cnt);
+        }
+    }
+    
+    //系统变量初始化  
+//    MemClr((uint8_t*)&SysRunSt,sizeof(SysRunSt));
+}
+
+/*****************************************************************************//*!
+*
+* @brief   Par check  .
+*     
+* @param   pos
+*          iVal
+* @return  none
+*
+* @ Pass/ Fail criteria: none
+*****************************************************************************/
+uint8_t ParCheck(uint16_t Pos, int16_t iVal)
+{
+    int16_t min;
+    int16_t max;
+    uint8_t res;
+    
+    res = 1;
+       
+    if(Pos > PAR_POS_END)
+    {
+        res = 0;
+        return res;
+    }   
+    min = ParTabAttr[Pos].min;
+    max = ParTabAttr[Pos].max;
+    
+    if(iVal<min)
+        res = 0;
+    if(iVal > max)
+        res = 0;
+    return res;
+}
+void Para_PID_Update(void)
+{
+	
+	Temperature.P = RunFlow.StateParameter.DryStartFlag ? ParTab[PAR_POS_DRY_P ].uVal: ParTab[PAR_POS_P_SET ].uVal;
+    Temperature.I = RunFlow.StateParameter.DryStartFlag ? ParTab[PAR_POS_DRY_I ].uVal:ParTab[PAR_POS_I_SET ].uVal;
+    Temperature.d = RunFlow.StateParameter.DryStartFlag ? ParTab[PAR_POS_DRY_D ].uVal: ParTab[PAR_POS_D_SET ].uVal;
+    Temperature.AR = RunFlow.StateParameter.DryStartFlag ? ParTab[PAR_POS_DRY_AR ].uVal:ParTab[PAR_POS_AR_SET ].uVal;
+    Temperature.T = RunFlow.StateParameter.DryStartFlag ? ParTab[PAR_POS_DRY_T ].uVal:ParTab[PAR_POS_T_SET ].uVal;
+}
+
+void CustomRunParaUpdata ( parameter *pRunPara )  
+{
+	   pRunPara->type           =  Custom;
+     pRunPara->steri 			  	=  ParTab[PAR_POS_CUSTOM_TEMP_SET_STERI].uVal*0.1;
+	   pRunPara->steri_time	   	=  ParTab[PAR_POS_CUSTOM_TIME_SET_STERI].uVal;
+     pRunPara->exhaust     	  =  ParTab[PAR_POS_CUSTOM_EXHAUST_SET].uVal*0.1;
+	   pRunPara->exhmode     	  =  ParTab[PAR_POS_CUSTOM_EXHAUST_MODE_SET].uVal;
+     pRunPara->balance_time 		=  ParTab[PAR_POS_CUSTOM_BLANCE_TIME_SET].uVal;
+     pRunPara->mode.dry_temp		=  ParTab[PAR_POS_CUSTOM_DRY_TEMP_SET].uVal*0.1;
+	   pRunPara->dry_kwarm_time.dry_temp	=  ParTab[PAR_POS_CUSTOM_DRY_TIME_SET].uVal;
+	   pRunPara->SetPoint       =   pRunPara->steri ;
+}
+
+void LiquidRunParaUpdata ( parameter *pRunPara )  
+{
+	   pRunPara->type           	=  Liquid;
+     pRunPara->steri 			  		=  ParTab[PAR_POS_LIQUID_STERI_TEMP_SET].uVal*0.1;
+	   pRunPara->steri_time	   		=  ParTab[PAR_POS_LIQUID_STERI_TIME_SET].uVal;
+     pRunPara->balance_time 		=  ParTab[PAR_POS_LIQUID_BLANCE_TIME_SET].uVal;
+     pRunPara->mode.keepwarm		=  ParTab[PAR_POS_LIQUID_KEEP_WARM_TEMP_SET].uVal*0.1;
+	   pRunPara->dry_kwarm_time.keepwarm	=  ParTab[PAR_POS_LIQUID_KEEP_WARM_TIME_SET].uVal;
+	   pRunPara->SetPoint       	=   pRunPara->steri ;
+	   pRunPara->exhaust     	 	  =  ParTab[PAR_POS_TEMP_BOIL].uVal;
+}
+
+void MeltRunParaUpdata ( parameter *pRunPara )  
+{
+	   pRunPara->type           =  Melt;
+     pRunPara->steri 			  	=  ParTab[PAR_POS_MELT_TEMP_SET].uVal*0.1;
+	   pRunPara->steri_time	   	=  ParTab[PAR_POS_MELT_TIME_SET].uVal;
+     pRunPara->mode.keepwarm		=  ParTab[PAR_POS_MELT_KEEP_WARM_TEMP_SET].uVal*0.1;
+	   pRunPara->dry_kwarm_time.keepwarm	=  ParTab[PAR_POS_MELT_KEEP_WARM_TIME_SET].uVal;
+	   pRunPara->SetPoint       =   pRunPara->steri ;
+	   pRunPara->exhaust     	  =  ParTab[PAR_POS_TEMP_BOIL].uVal;
+}
+
+void SolidRunParaUpdata ( parameter *pRunPara )  
+{
+	   pRunPara->type           =  Solid;
+     pRunPara->steri 			  	=  ParTab[PAR_POS_SOLID_STERI_TEMP_SET].uVal*0.1;
+	   pRunPara->steri_time	   	=  ParTab[PAR_POS_SOLID_STERI_TIME_SET].uVal;
+     pRunPara->exhaust     	  =  ParTab[PAR_POS_SOLID_EXHAUST_TEMP_SET].uVal*0.1;
+	   pRunPara->exhmode     	  =  ParTab[PAR_POS_CUSTOM_EXHAUST_MODE_SET].uVal;
+     pRunPara->mode.dry_temp		=  ParTab[PAR_POS_SOLID_DRY_TEMP_SET].uVal*0.1;
+	   pRunPara->dry_kwarm_time.dry_temp	=  ParTab[PAR_POS_SOLID_DRY_TIME_SET].uVal;
+	   pRunPara->SetPoint       =   pRunPara->steri ;
+}
+
+void FabricRunParaUpdata ( parameter *pRunPara )  
+{
+	   pRunPara->type           =  Fabric;
+     pRunPara->steri 			  	=  ParTab[PAR_POS_FABRIC_STERI_TEMP_SET].uVal*0.1;
+	   pRunPara->steri_time	   	=  ParTab[PAR_POS_FABRIC_STERI_TIME_SET].uVal;
+     pRunPara->exhaust     	  =  ParTab[PAR_POS_FABRIC_EXHAUST_TEMP_SET].uVal*0.1;
+	   pRunPara->exhmode     	  =  ParTab[PAR_POS_FABRIC_EXHAUST_MODE_SET].uVal;
+     pRunPara->balance_time 		=  ParTab[PAR_POS_FABRIC_BLANCE_TIME_SET].uVal;
+     pRunPara->mode.dry_temp		=  ParTab[PAR_POS_FABRIC_DRY_TEMP_SET].uVal*0.1;
+	   pRunPara->dry_kwarm_time.dry_temp	=  ParTab[PAR_POS_FABRIC_DRY_TIME_SET].uVal;
+	   pRunPara->SetPoint       =   pRunPara->steri ;
+}
+void PreHeatRunParaUpdata( parameter *pRunPara )  
+{
+		 pRunPara->type           =  PreHeat;
+     pRunPara->steri 			  	=  ParTab[PAR_POS_PRE_HEAT_TEMP].uVal;
+	   pRunPara->steri_time	   	=  ParTab[PAR_POS_PRE_HEAT_TIME].uVal;
+	
+	   pRunPara->exhaust     	  =  ParTab[PAR_POS_TEMP_BOIL].uVal;
+
+	     RellayCtrl( RelayOFF);
+	   pRunPara->SetPoint       =   pRunPara->steri ;
+}
+//UBaseType_t uxWords ;
+void ParaTask(void *argument)
+{
+  /* USER CODE BEGIN ParaTask */
+	    my_mem_init(SRAMIN);
+
+	(*pcRunParaUpdata[ParTab[PAR_POS_RUN_PROGRAM_TYPE].uVal]) ( &Procedure ); 
+   ParTab[PAR_POS_UPDATE_TIME].uVal=1;
+  /* Infinite loop */
+  for(;;)
+  {
+//     uxWords= uxTaskGetStackHighWaterMark(NULL);
+
+	  osThreadFlagsWait (TP_BIT_0, TP_BIT_0 , osWaitForever);	
+    FunStartStopCheck (&RunFlow);
+		Para_PID_Update();
+		ParSaveCheck();
+		if( ParTab[PAR_POS_PRO_CHOICE_CONFIRM].uVal == 1)
+		{
+      (*pcRunParaUpdata[ParTab[PAR_POS_RUN_PROGRAM_TYPE].uVal]) ( &Procedure ); 
+			 ParTab[PAR_POS_PRO_CHOICE_CONFIRM].uVal = 0;
+		}
+				osDelay(20);
+  }	
+
+  /* USER CODE END ParaTask */
+}
