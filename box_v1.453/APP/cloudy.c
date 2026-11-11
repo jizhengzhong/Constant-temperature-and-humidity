@@ -46,7 +46,7 @@ const unsigned int crc_table[256] = {
 };
 
 
-//²é±í·¨¼ÆËãcrc
+//æŸ¥è¡¨æ³•è®¡ç®—crc
 ///////////////modbus crc-16///////////////////////////
 unsigned short  do_crc_table(unsigned char *ptr, int len)
 {
@@ -65,27 +65,27 @@ unsigned short  do_crc_table(unsigned char *ptr, int len)
     BigLittleEnd ModbusCrc;
 
     /*-----------------------------------------------------------------------------------------*/
-    /*                             ´¦ Àí ´® ¿Ú 1 ½Ó ÊÕ µ½ µÄ Êý ¾Ý                             */
+    /*                             å¤„ ç† ä¸² å£ 1 æŽ¥ æ”¶ åˆ° çš„ æ•° æ®                             */
     /*-----------------------------------------------------------------------------------------*/
     if (U1_Control.URxDataOutPtr !=
-            U1_Control.URxDataInPtr) {    //Èç¹û´®¿Ú1µÄ URxDataOutPtrÖ¸Õë ºÍ URxDataInPtrÖ¸Õë²»ÏàµÈ£¬Ôòif³ÉÁ¢£¬ËµÃ÷´®¿Ú1ÓÐÊý¾Ý½ÓÊÕµ½ÁË
+            U1_Control.URxDataInPtr) {    //å¦‚æžœä¸²å£1çš„ URxDataOutPtræŒ‡é’ˆ å’Œ URxDataInPtræŒ‡é’ˆä¸ç›¸ç­‰ï¼Œåˆ™ifæˆç«‹ï¼Œè¯´æ˜Žä¸²å£1æœ‰æ•°æ®æŽ¥æ”¶åˆ°äº†
         U1_Control.U_Rxdatalen = U1_Control.URxDataOutPtr->EndPtr -
-                                 U1_Control.URxDataOutPtr->StartPtr;  //¼ÆËã±¾´Î½ÓÊÕµÄÊý¾ÝÁ¿
-        //			u1_printf("±¾´Î½ÓÊÕµ½ %d ×Ö½ÚÊý¾Ý\r\n",U1_Control.U_Rxdatalen);		                             //´®¿ÚÊä³öÌáÊ¾ÐÅÏ¢
-        memset(U1Copy_RxBuff, 0, U1_COPYBUFF_SIZE);                                                      //Çå¿Õ»º³åÇø
-        memcpy(U1Copy_RxBuff, U1_Control.URxDataOutPtr->StartPtr, U1_Control.U_Rxdatalen);               //ÌáÈ¡Êý¾Ý
+                                 U1_Control.URxDataOutPtr->StartPtr;  //è®¡ç®—æœ¬æ¬¡æŽ¥æ”¶çš„æ•°æ®é‡
+        //			u1_printf("æœ¬æ¬¡æŽ¥æ”¶åˆ° %d å­—èŠ‚æ•°æ®\r\n",U1_Control.U_Rxdatalen);		                             //ä¸²å£è¾“å‡ºæç¤ºä¿¡æ¯
+        memset(U1Copy_RxBuff, 0, U1_COPYBUFF_SIZE);                                                      //æ¸…ç©ºç¼“å†²åŒº
+        memcpy(U1Copy_RxBuff, U1_Control.URxDataOutPtr->StartPtr, U1_Control.U_Rxdatalen);               //æå–æ•°æ®
         ModbusCrc.value =	do_crc_table(&U1Copy_RxBuff[0], sizeof(U1Copy_RxBuff) -2);
-        if (    U1Copy_RxBuff[1]== 0x03  //Ö÷¶¯»ñÈ¡
+        if (    U1Copy_RxBuff[1]== 0x03  //ä¸»åŠ¨èŽ·å–
 					      && ModbusCrc.uBytes[0] == U1Copy_RxBuff[U1_COPYBUFF_SIZE - 1]
                 && ModbusCrc.uBytes[1] == U1Copy_RxBuff[U1_COPYBUFF_SIZE - 2]) {
                 Cloudy.Second = 0;
                 ParaUpdataCheck();
         }
 
-        //			u1_printf("½ÓÊÕµ½µÄÊý¾ÝÈçÏÂ£º\r\n%s\r\n\r\n",U1Copy_RxBuff);                                     //´®¿ÚÊä³öÌáÊ¾ÐÅÏ¢
-        U1_Control.URxDataOutPtr++;    //´®¿Ú1µÄ URxDataOutPtrÖ¸Õë ÏÂÒÆ
+        //			u1_printf("æŽ¥æ”¶åˆ°çš„æ•°æ®å¦‚ä¸‹ï¼š\r\n%s\r\n\r\n",U1Copy_RxBuff);                                     //ä¸²å£è¾“å‡ºæç¤ºä¿¡æ¯
+        U1_Control.URxDataOutPtr++;    //ä¸²å£1çš„ URxDataOutPtræŒ‡é’ˆ ä¸‹ç§»
         if (U1_Control.URxDataOutPtr ==
-                U1_Control.URxDataEndPtr) {                                      //Èç¹ûµ½´ï´¦Àí½ÓÊÕÊý¾ÝµÄ½á¹¹ÌåÊý×éÎ²²¿ÁË
+                U1_Control.URxDataEndPtr) {                                      //å¦‚æžœåˆ°è¾¾å¤„ç†æŽ¥æ”¶æ•°æ®çš„ç»“æž„ä½“æ•°ç»„å°¾éƒ¨äº†
             U1_Control.URxDataOutPtr = &U1_Control.UCB_RxBuffPtrCB[0];
         }
     } else {
@@ -170,13 +170,13 @@ uint8_t ParaUpdataCheck(void)
     pBigVale = (BigLittleEnd *) &Value[0];
 
     if (pSendBuf != NULL) {
-        *pSendBuf++ = ParTab[PAR_POS_DEVICE_ADDR].uVal;   // ´Ó»úµØÖ·
-        *pSendBuf++ = 0x46;   // Ð´Ö¸Áî
-        *pSendBuf++ = 0x00;   //ÆðÊ¼µØÖ·
-        *pSendBuf++ = 0x00;   //ÆðÊ¼µØÖ·
-        *pSendBuf++ = 0x00;   //¼Ä´æÆ÷µ¥Ôª³¤¶È
-        *pSendBuf++ = Lenth >> 1; //¼Ä´æÆ÷µ¥Ôª³¤¶È
-        *pSendBuf++ = Lenth;   //Êý¾Ý³¤¶È
+        *pSendBuf++ = ParTab[PAR_POS_DEVICE_ADDR].uVal;   // ä»Žæœºåœ°å€
+        *pSendBuf++ = 0x46;   // å†™æŒ‡ä»¤
+        *pSendBuf++ = 0x00;   //èµ·å§‹åœ°å€
+        *pSendBuf++ = 0x00;   //èµ·å§‹åœ°å€
+        *pSendBuf++ = 0x00;   //å¯„å­˜å™¨å•å…ƒé•¿åº¦
+        *pSendBuf++ = Lenth >> 1; //å¯„å­˜å™¨å•å…ƒé•¿åº¦
+        *pSendBuf++ = Lenth;   //æ•°æ®é•¿åº¦
         while (Lenth > 0) {
             *pSendBuf++ = pBigVale->uBytes[1];
             Lenth--;

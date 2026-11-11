@@ -80,23 +80,23 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
 	
 	  switch(eParity)
     {
-    // ��У��
+    // 奇校验
     case MB_PAR_ODD:
         huart3.Init.Parity = UART_PARITY_ODD;
-        huart3.Init.WordLength = UART_WORDLENGTH_9B;			// ����żУ��ʱ����λΪ9bits
+        huart3.Init.WordLength = UART_WORDLENGTH_9B;			// 有奇偶校验时数据位为9bits
         break;
 
-    // żУ��
+    // 偶校验
     case MB_PAR_EVEN:
         huart3.Init.Parity = UART_PARITY_EVEN;
-        huart3.Init.WordLength = UART_WORDLENGTH_9B;			// ����żУ��ʱ����λΪ9bits
+        huart3.Init.WordLength = UART_WORDLENGTH_9B;			// 有奇偶校验时数据位为9bits
         break;
 
-    // ��У��
+    // 无校验
     default:
         huart3.Init.Parity = UART_PARITY_NONE;
 		    huart3.Init.StopBits = UART_STOPBITS_2;
-        huart3.Init.WordLength = UART_WORDLENGTH_8B;			// ����żУ��ʱ����λΪ8bits
+        huart3.Init.WordLength = UART_WORDLENGTH_8B;			// 无奇偶校验时数据位为8bits
         break;
     }
   if (HAL_UART_Init(&huart3) != HAL_OK)
@@ -116,8 +116,8 @@ xMBPortSerialPutByte( CHAR ucByte )
     /* Put a byte in the UARTs transmit buffer. This function is called
      * by the protocol stack if pxMBFrameCBTransmitterEmpty( ) has been
      * called. */
-    /* �������� USART3 �ж�����á�HAL_UART_Transmit �������ȴ� TC��
-       TIM1 ʱ�����ȼ����� USART3 ʱ��ʱ�����ˣ�����ֱ��д DR�� */
+    /* 本函数在 USART3 中断里调用。HAL_UART_Transmit 会阻塞等待 TC，
+       TIM1 时基优先级高于 USART3 时超时到不了，这里直接写 DR。 */
     USART3->DR = (uint8_t)ucByte;
     return TRUE;
 }

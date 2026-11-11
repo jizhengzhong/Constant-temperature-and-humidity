@@ -48,14 +48,14 @@ extern "C" {
 
 #define PAR_VERSION_ID                          0x12C0
 
-#define PAR_POS_VER_ID      								   0                                   //0  °æ±¾
-#define PAR_POS_UPDATE_TIME           			  (PAR_POS_VER_ID+1)                   //1  ¸üĞÂÊ±¼ä
-#define PAR_POS_UPDATE                			  (PAR_POS_UPDATE_TIME+1)              //2  ¸üĞÂ³ÌĞò
+#define PAR_POS_VER_ID      								   0                                   //0  ç‰ˆæœ¬
+#define PAR_POS_UPDATE_TIME           			  (PAR_POS_VER_ID+1)                   //1  æ›´æ–°æ—¶é—´
+#define PAR_POS_UPDATE                			  (PAR_POS_UPDATE_TIME+1)              //2  æ›´æ–°ç¨‹åº
 #define PAR_POS_Run_Stop_Command   	   			  (PAR_POS_UPDATE+1)                   //3                                                                             
 #define PAR_POS_TEMP_SV     								  (PAR_POS_Run_Stop_Command+1)         //4
 #define PAR_POS_HUMI_SV             				  (PAR_POS_TEMP_SV+1)   				       //5
-#define PAR_POS_TEMP_STA_SECOND     				  (PAR_POS_HUMI_SV+1)                  //6  ÔİÊ±Î´ÓÃ
-#define PAR_POS_HUMI_STA_SECOND             	(PAR_POS_TEMP_STA_SECOND+1)   				   //7  ÔİÊ±Î´ÓÃ
+#define PAR_POS_TEMP_STA_SECOND     				  (PAR_POS_HUMI_SV+1)                  //6  æš‚æ—¶æœªç”¨
+#define PAR_POS_HUMI_STA_SECOND             	(PAR_POS_TEMP_STA_SECOND+1)   				   //7  æš‚æ—¶æœªç”¨
 #define PAR_POS_RUN_TIME_SET         			    (PAR_POS_HUMI_STA_SECOND+1)              //8
 #define PAR_POS_TEMP_Pb         			        (PAR_POS_RUN_TIME_SET+1)             //9
 #define PAR_POS_TEMP_Pk         			        (PAR_POS_TEMP_Pb+1)                  //10
@@ -81,22 +81,22 @@ extern "C" {
 #define PAR_POS_HUMI_I	                      (PAR_POS_HUMI_P+1)                    //30
 #define PAR_POS_HUMI_D	                      (PAR_POS_HUMI_I+1)                    //31
 #define PAR_POS_HUMI_GAMA	                    (PAR_POS_HUMI_D+1)                    //32
-#define PAR_POS_RUN_CHOICE_MODE               (PAR_POS_HUMI_GAMA+1)                 //33  Î´Ê¹ÓÃ
+#define PAR_POS_RUN_CHOICE_MODE               (PAR_POS_HUMI_GAMA+1)                 //33  æœªä½¿ç”¨
 #define PAR_POS_HUMI_SENSOR_LOW_VOLTAGE       (PAR_POS_RUN_CHOICE_MODE+1)           //34
 #define PAR_POS_HUMI_SENSOR_HIGH_VOLTAGE      (PAR_POS_HUMI_SENSOR_LOW_VOLTAGE+1)   //35
 
-#define bCtrol_Time_Mode       				 0  //bit0 :¶Ïµç»Ö¸´ 
-#define bCtrol_Run_Mode        				 1  //bit1:ÔËĞĞÄ£Ê½Ñ¡Ôñ£¨¶¨ÖÆ/³ÌÊ½Ä£Ê½£©
-#define bCtrol_Temp_Mode       				 2  //bit2:ÎÂ¶È¿ØÖÆÎ»
-#define bCtrol_Run_Stop_Mode   				 3  //bit:3:ÔËĞĞÍ£Ö¹¿ØÖÆÎ»
-#define bCtrol_Power_On_Run_Mode       4  //bit4£ºÅÅË®Ä£Ê½¿ØÖÆÎ»
-#define bCtrol_Compress_Mode    			 5  //bit5:Ñ¹Ëõ»ú¿ØÖÆÎ» 
-#define bCtrol_Door_Check_Mode 				 6  //bit6:ÃÅ¼ì²â¿ØÖÆÎ»
-#define bCtrol_Light           				 7  //bit7:ÕÕÃ÷µÆ¿ØÖÆÎ»
-#define bCtrol_Multi_Cali_Humi 				 8  //bit8:¿ªÆôÊª¶È¶àµãĞ£×¼
+#define bCtrol_Time_Mode       				 0  //bit0 :æ–­ç”µæ¢å¤ 
+#define bCtrol_Run_Mode        				 1  //bit1:è¿è¡Œæ¨¡å¼é€‰æ‹©ï¼ˆå®šåˆ¶/ç¨‹å¼æ¨¡å¼ï¼‰
+#define bCtrol_Temp_Mode       				 2  //bit2:æ¸©åº¦æ§åˆ¶ä½
+#define bCtrol_Run_Stop_Mode   				 3  //bit:3:è¿è¡Œåœæ­¢æ§åˆ¶ä½
+#define bCtrol_Power_On_Run_Mode       4  //bit4ï¼šæ’æ°´æ¨¡å¼æ§åˆ¶ä½
+#define bCtrol_Compress_Mode    			 5  //bit5:å‹ç¼©æœºæ§åˆ¶ä½ 
+#define bCtrol_Door_Check_Mode 				 6  //bit6:é—¨æ£€æµ‹æ§åˆ¶ä½
+#define bCtrol_Light           				 7  //bit7:ç…§æ˜ç¯æ§åˆ¶ä½
+#define bCtrol_Multi_Cali_Humi 				 8  //bit8:å¼€å¯æ¹¿åº¦å¤šç‚¹æ ¡å‡†
 #define PAR_POS_bCTROL              	 			  (PAR_POS_HUMI_SENSOR_HIGH_VOLTAGE+1)  //36
 #define PAR_POS_CMPRSSR_ON_TEMP_LOW           (PAR_POS_bCTROL+1)							//37
-#define PAR_POS_CMPRSSR_ON_PROHIBITED           (PAR_POS_CMPRSSR_ON_TEMP_LOW+1)				//38  J½ûÖ¹Ñ¹Ëõ»úÆô¶¯
+#define PAR_POS_CMPRSSR_ON_PROHIBITED           (PAR_POS_CMPRSSR_ON_TEMP_LOW+1)				//38  Jç¦æ­¢å‹ç¼©æœºå¯åŠ¨
 #define PAR_POS_CMPRSSR_ON_HUMI_L             (PAR_POS_CMPRSSR_ON_PROHIBITED+1)				//39
 #define PAR_POS_CMPRSSR_OFF_TEMP              (PAR_POS_CMPRSSR_ON_HUMI_L+1)				//40
 #define PAR_POS_CMPRSSR_ON_DELAY              (PAR_POS_CMPRSSR_OFF_TEMP+1)  			//41
@@ -1191,7 +1191,7 @@ extern "C" {
 
 
 
-//ÒÔÏÂÎªÖ»¶Á³ÌĞò
+//ä»¥ä¸‹ä¸ºåªè¯»ç¨‹åº
 
 #define PAR_POS_TEMP_DISPLAY                (PAR_POS_HUMI_MONITOR+1)                   //7
 #define PAR_POS_HUMI_DISPLAY                (PAR_POS_TEMP_DISPLAY+1)              //8
@@ -1264,11 +1264,11 @@ typedef union {
 extern uint16_t CurrentDuan;
 extern uint16_t ProCircleNum;
 
-extern partab_type ParTab[PAR_POS_END + 2]; //¹¤×÷²ÎÊı
-extern partab_type ParReceive[PAR_POS_END + 2]; //½ÓÊÕ²ÎÊı
-extern partab_type ParSaved[PAR_POS_END + 2]; //½ÓÊÕÒÑ´æ´¢µÄ²ÎÊı
+extern partab_type ParTab[PAR_POS_END + 2]; //å·¥ä½œå‚æ•°
+extern partab_type ParReceive[PAR_POS_END + 2]; //æ¥æ”¶å‚æ•°
+extern partab_type ParSaved[PAR_POS_END + 2]; //æ¥æ”¶å·²å­˜å‚¨çš„å‚æ•°
 extern partab_type ParUnSaved[25];
-//extern  uint8_t    ParReadSt[PAR_POS_END + 2]; //Ö¸Ê¾ÉÏÎ»»úÒÑ¶Á¸Ã²ÎÊı
+//extern  uint8_t    ParReadSt[PAR_POS_END + 2]; //æŒ‡ç¤ºä¸Šä½æœºå·²è¯»è¯¥å‚æ•°
 
 
 typedef struct {

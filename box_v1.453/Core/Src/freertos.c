@@ -243,7 +243,7 @@ void FunStartStopCheck(void)
 						 printf("the parameters before installation\r\n");
 						 printf("------------------------\r\n");
 					  }
-	          printf(" Temperature SV: %0.2f¡æ\r\n",SensorType.Parameter[TemperatureID].Target);
+	          printf(" Temperature SV: %0.2fâ„ƒ\r\n",SensorType.Parameter[TemperatureID].Target);
 					  printf(" Humidity SV: %0.2f%%rh\r\n",SensorType.Parameter[HumidityID].Target);
 					  printf("------------------------\r\n");
 					  SensorType.PrintLastSecond = sTime.Seconds;
@@ -268,7 +268,7 @@ void PrintData(partab_type * pTab,TypeCtrl *pSensorValue)
 				 Temp_Minute = 1440+ Minute;
 			 if( sTime.Seconds == SensorType.PrintLastSecond && Temp_Minute - SensorType.PrintLastMinitune >= pTab[PAR_POS_PRINT_INTERVAL].uVal  )
 				{
-					printf("20%d/%02d/%02d %02d:%02d:%02d, %0.1f¡æ,%0.1f%%rh\r\n", DateToUpdate.Year, DateToUpdate.Month, DateToUpdate.Date,  \
+					printf("20%d/%02d/%02d %02d:%02d:%02d, %0.1fâ„ƒ,%0.1f%%rh\r\n", DateToUpdate.Year, DateToUpdate.Month, DateToUpdate.Date,  \
 					sTime.Hours, sTime.Minutes, sTime.Seconds,pSensorValue->Parameter[TemperatureID].Display*0.1,pSensorValue->Parameter[HumidityID].Display*0.1);
 					SensorType.PrintLastMinitune = Minute;
 				}

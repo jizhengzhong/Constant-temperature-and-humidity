@@ -2,11 +2,11 @@
  #include "display.h"
  #include "stm32f1xx_hal.h"
 
-/* ÉÏµç×´Ì¬³õÊ¼»¯ */
+/* ä¸Šç”µçŠ¶æ€åˆå§‹åŒ– */
 void PowerUpState(void)
 {
 //    if(Time_SpeakInital<=300) 
-//			SPEAK_ON; //ÉÏµçÊ±·äÃùÆ÷"µÎ"Ãù½Ğ
+//			SPEAK_ON; //ä¸Šç”µæ—¶èœ‚é¸£å™¨"æ»´"é¸£å«
 //    else
 //    {
 //        Time_SpeakInital=320;
@@ -16,18 +16,18 @@ void PowerUpState(void)
     
     //UART2Error();
     //UART2Switch(); 
-    //ÎÂ¶È²ÉÑù´¦Àí
+    //æ¸©åº¦é‡‡æ ·å¤„ç†
 //    if(SAMPLE.Flag_KtOK1&&SAMPLE.Flag_KtOK2&&SAMPLE.Flag_EnvOK)
 //    {
 //        SAMPLE.Flag_KtOK1=0;
 //        SAMPLE.Flag_KtOK2=0;
 //        SAMPLE.Flag_EnvOK=0;
 //        DataFilter(Temp_KtSample1,Temp_KtSample2,Temp_EnvSample); 
-//        CalculateTemp();//¼ÆËãÎÂ¶È
+//        CalculateTemp();//è®¡ç®—æ¸©åº¦
 //    }
-    //ÉÏµçÊ±PID¸³³õÖµ
-    Temp_ISumVaule=0;  // //»ı·ÖÏîÀÛ¼ÓÖµ
-    Temp_DFVaule=Temp_Measure; //Temp_Measure ÎÂ¶È²âÁ¿ÖµÉèÎª  Î¢·ÖÏÖĞĞ¸³Öµ
+    //ä¸Šç”µæ—¶PIDèµ‹åˆå€¼
+    Temp_ISumVaule=0;  // //ç§¯åˆ†é¡¹ç´¯åŠ å€¼
+    Temp_DFVaule=Temp_Measure; //Temp_Measure æ¸©åº¦æµ‹é‡å€¼è®¾ä¸º  å¾®åˆ†ç°è¡Œèµ‹å€¼
     Temp_LastMeasure=Temp_Measure;
     SP_Buffer[0]=Temp_Display;
 //    OTHER();

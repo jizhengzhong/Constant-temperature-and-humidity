@@ -25,11 +25,11 @@
  #include "stdio.h"
 
 
-UCB_CB U1_Control;            //���ƴ���1�Ľṹ��
+UCB_CB U1_Control;            //控制串口1的结构体
 
-uint8_t  U1_TxBuff[U1_TXBUFF_SIZE];         //����һ�����黺����������1���ͻ����� 
-uint8_t  U1_RxBuff[U1_RXBUFF_SIZE];         //����һ�����黺����������1�����ճ��� 
-uint8_t  U1Copy_RxBuff[U1_COPYBUFF_SIZE];   //����һ�����黺����������1�����������ݵĸ���������
+uint8_t  U1_TxBuff[U1_TXBUFF_SIZE];         //定义一个数组缓冲区，串口1发送缓冲区 
+uint8_t  U1_RxBuff[U1_RXBUFF_SIZE];         //定义一个数组缓冲区，串口1发接收冲区 
+uint8_t  U1Copy_RxBuff[U1_COPYBUFF_SIZE];   //定义一个数组缓冲区，串口1处理接收数据的副本缓冲区
 /* USER CODE END 0 */
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -60,10 +60,10 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-  __HAL_UART_CLEAR_IDLEFLAG(&U1_Control.UART_Handler);                //��������жϱ�־ 
-	__HAL_UART_ENABLE_IT(&U1_Control.UART_Handler,UART_IT_IDLE);        //���������ж�	
-	U1Rx_Buff_Init();                                                   //��ʼ������1�����������ݵĸ�������
-	HAL_UART_Receive_DMA(&U1_Control.UART_Handler, U1_RxBuff, U1_DMARX_SIZE);  //����DMA����
+  __HAL_UART_CLEAR_IDLEFLAG(&U1_Control.UART_Handler);                //清除空闲中断标志 
+	__HAL_UART_ENABLE_IT(&U1_Control.UART_Handler,UART_IT_IDLE);        //开启空闲中断	
+	U1Rx_Buff_Init();                                                   //初始化串口1处理接收数据的各个变量
+	HAL_UART_Receive_DMA(&U1_Control.UART_Handler, U1_RxBuff, U1_DMARX_SIZE);  //启动DMA接收
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -339,7 +339,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 
-/*****************  �����ַ��� **********************/
+/*****************  发送字符串 **********************/
 void Usart_SendString(uint8_t *str)
 {
 	unsigned int k=0;
@@ -350,16 +350,16 @@ void Usart_SendString(uint8_t *str)
   } while(*(str + k)!='\0');
   
 }
-//�ض���c�⺯��printf������DEBUG_USART���ض�����ʹ��printf����
+//重定向c库函数printf到串口DEBUG_USART，重定向后可使用printf函数
 int fputc(int ch, FILE *f)
 {
-	/* ����һ���ֽ����ݵ�����DEBUG_USART */
+	/* 发送一个字节数据到串口DEBUG_USART */
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 1000);	
 	
 	return (ch);
 }
 
-//�ض���c�⺯��scanf������DEBUG_USART����д����ʹ��scanf��getchar�Ⱥ���
+//重定向c库函数scanf到串口DEBUG_USART，重写向后可使用scanf、getchar等函数
 int fgetc(FILE *f)
 {		
 	int ch;
@@ -368,17 +368,17 @@ int fgetc(FILE *f)
 }
 
 /*----------------------------------------------------------*/
-/*����������ʼ�������������ݵĽṹ������                    */
-/*��  ������                                                */
-/*����ֵ����                                                */
+/*函数名：初始化处理接收数据的结构体数组                    */
+/*参  数：无                                                */
+/*返回值：无                                                */
 /*----------------------------------------------------------*/
 void U1Rx_Buff_Init(void)
 {	
-	U1_Control.URxDataInPtr  = &U1_Control.UCB_RxBuffPtrCB[0];           //ָ���ǽ���������ʼλ�ã���ֹλ�õĽṹ�������Ĳ������ݵ�λ�õ�ָ�룬���ʼ��ʱ��ָ��������0�ų�Ա
-	U1_Control.URxDataOutPtr =  U1_Control.URxDataInPtr;                 //ָ���ǽ���������ʼλ�ã���ֹλ�õĽṹ����������ȡ���ݵ�λ�õ�ָ�룬���ʼ��ʱ��ָ��������0�ų�Ա
-  U1_Control.URxDataEndPtr = &U1_Control.UCB_RxBuffPtrCB[NUM-1];       //ָ���ǽ���������ʼλ�ã���ֹλ�õĽṹ�������Ľ�β���ݵ�λ�õ�ָ�룬���ʼ��ʱ��ָ�����������һ����Ա
-	U1_Control.URxDataInPtr->StartPtr = U1_RxBuff;                       //��ʼλ��
-	U1_Control.URxDataInPtr->EndPtr = U1_RxBuff;                         //��ʼλ��
-	U1_Control.U_RxCounter = 0;                                          //����1�ۼƽ���λ�ñ���������Ϊ0
+	U1_Control.URxDataInPtr  = &U1_Control.UCB_RxBuffPtrCB[0];           //指向标记接收数据起始位置，截止位置的结构体的数组的插入数据的位置的指针，在最开始的时候指向该数组的0号成员
+	U1_Control.URxDataOutPtr =  U1_Control.URxDataInPtr;                 //指向标记接收数据起始位置，截止位置的结构体的数组的提取数据的位置的指针，在最开始的时候指向该数组的0号成员
+  U1_Control.URxDataEndPtr = &U1_Control.UCB_RxBuffPtrCB[NUM-1];       //指向标记接收数据起始位置，截止位置的结构体的数组的结尾数据的位置的指针，在最开始的时候指向该数组的最后一个成员
+	U1_Control.URxDataInPtr->StartPtr = U1_RxBuff;                       //起始位置
+	U1_Control.URxDataInPtr->EndPtr = U1_RxBuff;                         //起始位置
+	U1_Control.U_RxCounter = 0;                                          //串口1累计接收位置变量，设置为0
 }
 /* USER CODE END 1 */

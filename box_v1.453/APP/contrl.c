@@ -105,7 +105,7 @@ void StableCheck(partab_type *pBuff, TypeCtrl*pSensorValue)
         if (pSensorValue->Parameter[TemperatureID].DiffStableSecond > pBuff[PAR_POS_TEMP_STA_SECOND].uVal) {
             pSensorValue->Parameter[TemperatureID].DiffStableSecond = pBuff[PAR_POS_TEMP_STA_SECOND].uVal + 5;
             pSensorValue->Parameter[TemperatureID].Bit.bStable = 1;
-                pSensorValue->Flag.EnTime = 1; //ʹ�����м�ʱ
+                pSensorValue->Flag.EnTime = 1;
         }
     } else {
         pSensorValue->Flag.EnTime =   pSensorValue->Flag.TimeMode ?      0  : 1 ;

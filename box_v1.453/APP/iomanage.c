@@ -12,9 +12,9 @@ void io_manage(void)
     uint32_t Cnt;
     uint32_t u32t;
     
-    //¼ÇÂ¼ÉÏ´ÎÖµÓÃÓÚ±ßÑØÅĞ¶¨
+    //è®°å½•ä¸Šæ¬¡å€¼ç”¨äºè¾¹æ²¿åˆ¤å®š
     InStLast.St = SysRunSt.Io.InPut.St;
-        //×´Ì¬»ñÈ¡
+        //çŠ¶æ€è·å–
     InSt.St = 0;
     if(IN_EN_ST==IN_YL)
         InSt.bits.in_YL = 1;
@@ -36,7 +36,7 @@ void io_manage(void)
     SysRunSt.Io.InPutList[1].St = SysRunSt.Io.InPutList[0].St;
     SysRunSt.Io.InPutList[0].St = InSt.St;
     
-    //ÊäÈë  ×´Ì¬  È·ÈÏ
+    //è¾“å…¥  çŠ¶æ€  ç¡®è®¤
     for(Cnt=0;Cnt<sizeof(sys_in_type);Cnt++) {
         if((SysRunSt.Io.InPutList[0].Stv[Cnt] == SysRunSt.Io.InPutList[1].Stv[Cnt])
         && (SysRunSt.Io.InPutList[0].Stv[Cnt] == SysRunSt.Io.InPutList[2].Stv[Cnt])
@@ -45,13 +45,13 @@ void io_manage(void)
             SysRunSt.Io.InPut.Stv[Cnt] = SysRunSt.Io.InPutList[0].Stv[Cnt];
         } 
     }
-    //±ßÑØ
-    u32t = InStLast.St ^ SysRunSt.Io.InPut.St; //±ßÑØ´æÔÚ
-    SysRunSt.Io.FoundEdge.St = u32t & SysRunSt.Io.InPut.St; //¿ª¹Ø±ÕºÏ±ßÑØ
-    SysRunSt.Io.LostEdge.St = u32t & InStLast.St; //¿ª¹Ø¶Ï¿ª±ßÑØ
+    //è¾¹æ²¿
+    u32t = InStLast.St ^ SysRunSt.Io.InPut.St; //è¾¹æ²¿å­˜åœ¨
+    SysRunSt.Io.FoundEdge.St = u32t & SysRunSt.Io.InPut.St; //å¼€å…³é—­åˆè¾¹æ²¿
+    SysRunSt.Io.LostEdge.St = u32t & InStLast.St; //å¼€å…³æ–­å¼€è¾¹æ²¿
     
     
-//    //Êä³öÓ³Éä
+//    //è¾“å‡ºæ˜ å°„
 //    if(SysRunSt.Io.OutPut.bits.out_COOL_PUMP)
 //        OUT_COOL_PUMP = JK_OUT_ENABLE;
 //    else
@@ -63,10 +63,10 @@ void io_manage(void)
 //    else
 //        OUT_WATER_PUMP = JK_OUT_DISABLE;
     
-    //200V¹©µç
+    //200Vä¾›ç”µ
 //    JK_OUT_AC220_en();
     
-//    //·äÃùÆ÷
+//    //èœ‚é¸£å™¨
 //    if(IsSysErrFound())
 //    {
 //        if(bSysWave_500ms)

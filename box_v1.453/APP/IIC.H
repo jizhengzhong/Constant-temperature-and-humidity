@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-#define EEPROM_I2C_WR	0		/* Ğ´¿ØÖÆbit */
-#define EEPROM_I2C_RD	1		/* ¶Á¿ØÖÆbit */	
-#define EEPROM_GPIO_PORT_I2C	GPIOB			/* GPIO¶Ë¿Ú */
+#define EEPROM_I2C_WR	0		/* å†™æ§åˆ¶bit */
+#define EEPROM_I2C_RD	1		/* è¯»æ§åˆ¶bit */	
+#define EEPROM_GPIO_PORT_I2C	GPIOB			/* GPIOç«¯å£ */
 
-#define EEPROM_I2C_SCL_Pin		GPIO_PIN_6			/* Á¬½Óµ½SCLÊ±ÖÓÏßµÄGPIO */
-#define EEPROM_I2C_SDA_Pin		GPIO_PIN_7			/* Á¬½Óµ½SDAÊı¾İÏßµÄGPIO */
+#define EEPROM_I2C_SCL_Pin		GPIO_PIN_6			/* è¿æ¥åˆ°SCLæ—¶é’Ÿçº¿çš„GPIO */
+#define EEPROM_I2C_SDA_Pin		GPIO_PIN_7			/* è¿æ¥åˆ°SDAæ•°æ®çº¿çš„GPIO */
 
 #define EE_WP_Pin GPIO_PIN_8
 #define EE_WP_GPIO_Port GPIOB
@@ -20,7 +20,7 @@
 #define EEPROM_I2C_SDA_1()  EEPROM_GPIO_PORT_I2C->BSRR = EEPROM_I2C_SDA_Pin				/* SDA = 1 */
 #define EEPROM_I2C_SDA_0()  EEPROM_GPIO_PORT_I2C->BRR = EEPROM_I2C_SDA_Pin				/* SDA = 0 */
 
-#define EEPROM_I2C_SDA_READ()  ((EEPROM_GPIO_PORT_I2C->IDR & EEPROM_I2C_SDA_Pin) != 0)	/* ¶ÁSDA¿ÚÏß×´Ì¬ */
+#define EEPROM_I2C_SDA_READ()  ((EEPROM_GPIO_PORT_I2C->IDR & EEPROM_I2C_SDA_Pin) != 0)	/* è¯»SDAå£çº¿çŠ¶æ€ */
 
 void i2c_Start(void);
 void i2c_Stop(void);

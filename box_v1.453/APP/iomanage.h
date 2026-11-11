@@ -72,16 +72,16 @@ extern "C" {
         uint8_t Stv[2];
 
         struct {
-            uint16_t out_ALARM : 1;  //±¨¾¯
-            uint16_t out_JSF_H : 1;  //½øË®·§
-            uint16_t out_JQB_H : 1;  //½øÆø±Ã
-            uint16_t out_PSF_H : 1;  //ÅÅË®·§
-            uint16_t out_CKF_H : 1;  //³£±Õ·§
-            uint16_t out_FS_H : 1;   //·çÉÈ
-            uint16_t out_LOCK_H : 1; //Ëø
-            uint16_t out_CBF_H : 1;  //³£±Õ·§
-            uint16_t out_ZJR_H : 1;  //Ö÷¼ÓÈÈ
-            uint16_t out_GZJR_H : 1; //¸ÉÔï¼ÓÈÈ
+            uint16_t out_ALARM : 1;  //æŠ¥è­¦
+            uint16_t out_JSF_H : 1;  //è¿›æ°´é˜€
+            uint16_t out_JQB_H : 1;  //è¿›æ°”æ³µ
+            uint16_t out_PSF_H : 1;  //æ’æ°´é˜€
+            uint16_t out_CKF_H : 1;  //å¸¸é—­é˜€
+            uint16_t out_FS_H : 1;   //é£æ‰‡
+            uint16_t out_LOCK_H : 1; //é”
+            uint16_t out_CBF_H : 1;  //å¸¸é—­é˜€
+            uint16_t out_ZJR_H : 1;  //ä¸»åŠ çƒ­
+            uint16_t out_GZJR_H : 1; //å¹²ç‡¥åŠ çƒ­
             uint16_t bit10 : 1;  //
             uint16_t bit11 : 1;
             uint16_t bit12 : 1;
@@ -93,34 +93,34 @@ extern "C" {
 				
 		
 		    typedef struct {
-        //Êı×ÖÊäÈë
+        //æ•°å­—è¾“å…¥
         sys_in_type InPut;
         sys_in_type InPutList[4];
         sys_in_type LostEdge;
         sys_in_type FoundEdge;
         sys_out_type OutPut;
         sys_out_type OutPutOld;
-        //AD×ª»»ÊıÖµ»ñÈ¡
-        uint16_t Pt100AdValList[5]; //pt ²âÁ¿AD
+        //ADè½¬æ¢æ•°å€¼è·å–
+        uint16_t Pt100AdValList[5]; //pt æµ‹é‡AD
         uint16_t Pt100AdValIndex;
         uint16_t Pt100AdVal;
-        uint16_t TcdMainAdValList[5]; //TCD Ö÷²âÁ¿
+        uint16_t TcdMainAdValList[5]; //TCD ä¸»æµ‹é‡
         uint16_t TcdMainAdValIndex;
         uint16_t TcdMainAdVal;
-        uint16_t DigHumiAdValList[5]; //Êı×ÖÊª¶È
+        uint16_t DigHumiAdValList[5]; //æ•°å­—æ¹¿åº¦
         uint16_t DigHumiAdValIndex;
         uint16_t DigHumiAdVal;
-        uint16_t DigTempAdValList[5]; //Êı×ÖÎÂ¶È
+        uint16_t DigTempAdValList[5]; //æ•°å­—æ¸©åº¦
         uint16_t DigTempAdValIndex;
         uint16_t DigTempAdVal;
-        uint16_t TcdMeasureAdValList[5]; //TCD ²âÁ¿±Û
+        uint16_t TcdMeasureAdValList[5]; //TCD æµ‹é‡è‡‚
         uint16_t TcdMeasureAdValIndex;
         uint16_t TcdMeasureAdVal;
-        uint16_t TcdRefAdValList[5]; //TCD²Î¿¼±Û
+        uint16_t TcdRefAdValList[5]; //TCDå‚è€ƒè‡‚
         uint16_t TcdRefAdValIndex;
         uint16_t TcdRefAdVal;
         
-        //Ä£ÄâÊäÈë
+        //æ¨¡æ‹Ÿè¾“å…¥
         int32_t iTempMain;
         float fTempMain;
         int32_t iTempDoor;
@@ -132,7 +132,7 @@ extern "C" {
         float SHT85_fHumi;
         float SHT85_fTemp;
         
-        //Ä£ÄâÊä³ö
+        //æ¨¡æ‹Ÿè¾“å‡º
         int32_t AdjTempOutDuty;
         int32_t AdjColOutDuty;
         int32_t AdjTempPeriod;
@@ -149,28 +149,28 @@ extern "C" {
         uint8_t ErrStLast[4][16];
         uint8_t err_global;
         
-        uint8_t sd_cd_st; //sd ²å¿¨×´Ì¬
-        uint8_t sd_state; //sd ³õÊ¼»¯Íê³É
+        uint8_t sd_cd_st; //sd æ’å¡çŠ¶æ€
+        uint8_t sd_state; //sd åˆå§‹åŒ–å®Œæˆ
         
         uint8_t bLoginSt;
-        uint32_t PowerUpTimeCnt; //µ¥Î»s
+        uint32_t PowerUpTimeCnt; //å•ä½s
         sys_io_type Io;
 
-        //¿ØÖÆÉè¶¨
+        //æ§åˆ¶è®¾å®š
         uint8_t bTempRun;
         int16_t TempMainSet;
 
         
-        //ÔËĞĞ¿ØÖÆ
+        //è¿è¡Œæ§åˆ¶
         uint8_t bSysRun;
         uint32_t TimeSet;
         uint32_t TimeCnt;
         
-        //Ãğ¾ú¿ØÖÆ
+        //ç­èŒæ§åˆ¶
         uint8_t bMjRun;
         uint32_t MjTimeSet;
 //        uint32_t MjTimeCnt;
-        //¿ØÖÆÖµ / ÏÔÊ¾Öµ
+        //æ§åˆ¶å€¼ / æ˜¾ç¤ºå€¼
         int16_t TempMainDisp;           
         
     } sys_run_st_type;	

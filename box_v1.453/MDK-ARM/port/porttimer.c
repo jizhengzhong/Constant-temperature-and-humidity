@@ -83,7 +83,7 @@ xMBPortTimersInit( USHORT usTim1Timerout50us )
     Error_Handler();
   }
 	
-    /* HAL_TIM_Base_Init ����λ UIF������ֻ���־���ж����� vMBPortTimersEnable() �ٴ򿪡� */
+    /* HAL_TIM_Base_Init 会置位 UIF。这里只清标志，中断留到 vMBPortTimersEnable() 再打开。 */
     __HAL_TIM_CLEAR_FLAG(&htim4, TIM_FLAG_UPDATE);
     __HAL_TIM_DISABLE_IT(&htim4, TIM_IT_UPDATE);
 

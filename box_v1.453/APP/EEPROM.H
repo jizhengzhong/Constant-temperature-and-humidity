@@ -15,16 +15,16 @@
  * 1 0 1 0 0  0  0  1 = 0XA1 
  */
 
-/* AT24C01/02Ã¿Ò³ÓĞ8¸ö×Ö½Ú 
- * AT24C04/08A/16AÃ¿Ò³ÓĞ16¸ö×Ö½Ú 
+/* AT24C01/02æ¯é¡µæœ‰8ä¸ªå­—èŠ‚ 
+ * AT24C04/08A/16Aæ¯é¡µæœ‰16ä¸ªå­—èŠ‚ 
  */
 	
-#define EEPROM_I2C_WR	0		/* Ğ´¿ØÖÆbit */
-#define EEPROM_I2C_RD	1		/* ¶Á¿ØÖÆbit */
+#define EEPROM_I2C_WR	0		/* å†™æ§åˆ¶bit */
+#define EEPROM_I2C_RD	1		/* è¯»æ§åˆ¶bit */
 
-#define EEPROM_DEV_ADDR			0xac		/* 24xx02µÄÉè±¸µØÖ· */
-#define EEPROM_PAGE_SIZE		32			  /* 24xx02µÄÒ³Ãæ´óĞ¡ */
-#define EEPROM_SIZE				  4*1024			  /* 24xx02×ÜÈİÁ¿ */
+#define EEPROM_DEV_ADDR			0xac		/* 24xx02çš„è®¾å¤‡åœ°å€ */
+#define EEPROM_PAGE_SIZE		32			  /* 24xx02çš„é¡µé¢å¤§å° */
+#define EEPROM_SIZE				  4*1024			  /* 24xx02æ€»å®¹é‡ */
 
 
 uint8_t ee_CheckOk(void);

@@ -6,7 +6,7 @@
 
 
 const partab_attr_type ParTabAttr[] = {
-    {0x0000, PAR_VERSION_ID, PAR_VERSION_ID, PAR_VERSION_ID, "VERSIONID"}, //0
+    {0x0000, 0, PAR_VERSION_ID, PAR_VERSION_ID, "VERSIONID"}, //0
     {0x0000, 0, 1, 0, "UpdataTime"},        //1
     {0x0000, 0, 1, 0, "Update"},            //2
     {0x0001, 0, 1, 0, "RunStopCommand"},  			//3
@@ -19,46 +19,46 @@ const partab_attr_type ParTabAttr[] = {
     {0x0000, -10000, 10000, 0, "TempPk"},     //10
     {0x0000, -1000, 3000, 0, "HumiPb"},         //11
     {0x0000, -4000, 4000, 0, "HumiPk"},     //12
-    {0x0001, 0, 9999, 0, "TempAL"},         //13
-    {0x0000, 0, 9999, 0, "TempAH"},         //14
-    {0x0000, 0, 100, 0, "TempFilter"},      //15
-    {0x0000, 0, 9999, 0, "HumiAL"},         //16
-    {0x0000, 0, 9999, 0, "HumiAH"},         //17
-    {0x0001, 0, 100, 0, "HumiFilter"},      //18
-    {0x0000, 0, 9999, 0, "HumiDiffCount"},  //19
-    {0x0000, 0, 9999, 0, "TempDiffCount"},  //20
+    {0x0001, 0, 9999, 30, "TempAL"},         //13
+    {0x0000, 0, 9999, 30, "TempAH"},         //14
+    {0x0000, 0, 100, 80, "TempFilter"},      //15
+    {0x0000, 0, 9999, 50, "HumiAL"},         //16
+    {0x0000, 0, 9999, 50, "HumiAH"},         //17
+    {0x0001, 0, 100, 80, "HumiFilter"},      //18
+    {0x0000, 0, 9999, 10, "HumiDiffCount"},  //19
+    {0x0000, 0, 9999, 30, "TempDiffCount"},  //20
     {0x0000, 0, 100, 10, "TempSetP"},       //21
-    {0x0000, 0, 3600, 350, "TempSetI"},     //22
-    {0x0001, 0, 3600, 200, "TempSetD"},     //23
+    {0x0000, 0, 3600, 220, "TempSetI"},     //22
+    {0x0001, 0, 3600, 80, "TempSetD"},     //23
     {0x0001, 0, 100, 100, "TempSetAR"},     //24
     {0x0001, 0, 100, 3, "TempSetT"},        //25
     {0x0000, 0, 100, 50, "TempGama"},       //26
     {0x0001, 0, 100, 100, "HumiAR"},        //27
     {0x0000, 0, 100, 5, "HumiT"},           //28
-    {0x0000, 0, 500, 5, "HumiP"},           //29
-    {0x0000, 0, 3600, 200, "HumiI"},        //30
-    {0x0000, 0, 3600, 100, "HumiD"},        //31
+    {0x0000, 0, 500, 25, "HumiP"},           //29
+    {0x0000, 0, 3600, 250, "HumiI"},        //30
+    {0x0000, 0, 3600, 5, "HumiD"},        //31
     {0x0001, 0, 100, 50, "HumiGama"},       //32
     {0x0000, 0, 1, 0, "ProModeChoice"},     //33
-    {0x0000, 0, 120, 0, "HumiLowVoltage"},  //34
+    {0x0000, 0, 120, 10, "HumiLowVoltage"},  //34
     {0x0000, 0, 500, 36, "HumiHighVoltage"}, //35
     {0x0000, 0, 0x0FFF, 0, "bCTROL"},     //36
     {0x0000, 0, 1000, 500, "CompresONTempLow"}, //37
     {0x0002, 0, 1000, 500, "CompressONDev"}, //38
     {0x0002, 0, 1000, 500, "CompressOFFDev"}, //39
     {0x0002, 0, 1000, 500, "CompressOFFHumiH"}, //40
-    {0x0002, 0, 9999, 3, "CompressONDly"}, 		 //41
+    {0x0002, 0, 9999, 180, "CompressONDly"}, 		 //41
     {0x0000, 0, 9999, 0, "AddWaterDly"},  		 //42
     {0x0001, 0, 1, 0, "AddWaterRely"},   		 //43
     {0x0000, 0, 9999, 0, "DrainWaterDly"},   	 //44
-    {0x0001, -1000, 1000, 0, "SubTempPb1"},       //45
+    {0x0001, -32000, 32000, 0, "SubTempPb1"},       //45
     {0x0001, -4000, 4000, 0, "SubTempPk1"},     //46
-    {0x0001, -1000, 3000, 0, "SubHumiPb1"},         //47
+    {0x0001, -32000, 32000, 0, "SubHumiPb1"},         //47
     {0x0001, -4000, 4000, 0, "SubHumiPk1"},     //48
     {0x0000, 0, 300, 0, "CurrentRunRow"},        //49
     {0x0000, 0, 99, 5, "ProCircleCount"},        //50
-    {0x0000, 0, 10000, 0, "MainTempK"},     			//51
-    {0x0000, -32000, 32000, 0, "MainTempB"},        		//52
+    {0x0000, 0, 10000, 594, "MainTempK"},     			//51
+    {0x0000, -32000, 32000, 297, "MainTempB"},        		//52
     {0x0000, 0, 9999, 0, "ProTime0"},        		//53
     {0x0000, 0, 9, 0,    "ProIndex"},        		  //54
     {0x0000, 0, 32765, 0, "ProEndCount"},        		//55
@@ -168,7 +168,7 @@ const partab_attr_type ParTabAttr[] = {
     {0x0001, 0, 1500, 900, "MoniWishHumiDisp11"},       //150
     {0x0001, 0, 1500, 1000, "MoniWishHumiDisp12"},       //151
 
-    {0x0001, 0, 1500, 0, "beifei1"},       //152
+    {0x0001, 0, 60000, 0, "SetUVTime"},       //152
     {0x0001, 0, 1500, 0, "beifen2"},       //153
     {0x0001, 0, 1500, 0, "beifen3"},       //154
 
@@ -1448,14 +1448,18 @@ static void ParSave(uint16_t Pos)
 
     do {
         int32_t TimeOutCnt;
-        //д������
+        //写入数据
         I2C_EE_BufferWrite((uint8_t*)ParTab[Pos].uBytes, 2 * Pos, 2);
-        //����У��
+        //读回校验
         ParX.uVal = ~ParTab[Pos].uVal;
         TimeOutCnt = 5;
 
         do {
-				 HAL_Delay(5);//ԭ��8ms
+            if (osKernelGetState() == osKernelRunning) {
+                osDelay(5);
+            } else {
+                HAL_Delay(5);
+            }
             rtn = ee_ReadBytes((uint8_t *) ParX.uBytes, 2 * Pos, 2);
 
             if (!rtn) {
@@ -1470,7 +1474,7 @@ static void ParSave(uint16_t Pos)
             }
         } while (1);
 
-        //У��ɹ��˳�
+        //校验成功退出
         if (ParX.uVal == ParTab[Pos].uVal) {
             break;
         } else {
@@ -1488,8 +1492,8 @@ void ParSaveCheck(void)
 {
     uint32_t Index;
 
-    //ǰ����������ID��LK���ӵ�3��������ʼ�洢
-    //��⵽����ֵ�仯�ʹ洢��EEPROM
+    //前两个参数是ID和LK，从第3个参数开始存储
+    //检测到参数值变化就存储至EEPROM
     for (Index = 4; Index < PAR_POS_END; Index++) {
         if (ParSaved[Index].uVal != ParReceive[Index].uVal) {
             ParSaved[Index].uVal = ParReceive[Index].uVal;
@@ -1600,9 +1604,9 @@ void ParLoad(void)
 void SysParInit(void)
 {
     unsigned short int Cnt = 0;
-    //ϵͳ�趨��������
+    //系统设定参数加载
     ParLoad();
-    //����������ע�͵�
+    //自整定功能注释掉
     //    ParTab[PAR_POS_COL_AT].iVal = 0;
     //    ParTab[PAR_POS_TEMP_AT].iVal = 0;
 
@@ -1629,7 +1633,7 @@ void SysParInit(void)
         }
     }
 
-    //ϵͳ������ʼ��
+    //系统变量初始化
     //    MemClr((uint8_t*)&SysRunSt,sizeof(SysRunSt));
 }
 
@@ -1677,7 +1681,6 @@ void ParaTask(void *argument)
 	
 	    osDelay(100);
     ParaUpdataCheck();
-//    SysParInit();
     ParTab[PAR_POS_UPDATE_TIME].uVal = 1;
 
     /* Infinite loop */

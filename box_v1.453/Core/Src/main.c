@@ -129,10 +129,9 @@ int main(void)
     ee_CheckOk();
 		SysParInit();
     //  W25Qxx_Write_Page(Senbuff, 1);
-    // ee_WriteBytes((uint8_t*)&Senbuff, 32, sizeof(Senbuff));
-    HAL_Delay(1000);
+
+//           HAL_Delay(1000);
     //		W25Qxx_Read(Receivebuff,256,256) ;
-    ParLoad();
 	
 	ParTab[PAR_POS_UPDATE_TIME].uVal = 1;
   /* USER CODE END 2 */
@@ -148,7 +147,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     while (1) {
         //    HAL_UART_Transmit(&huart2, (const uint8_t *)"123456", 6, 10)  ;
-        printf("��ӭstik\n");
+        printf("欢迎stik\n");
         HAL_Delay(1000);
         //		  HAL_Delay(10);
     /* USER CODE END WHILE */

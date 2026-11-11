@@ -9,14 +9,14 @@
 typedef  void (*pCallback)(partab_type *ParTab, TypeCtrl* pType);
 typedef  void (*pEventFunEntry)(EVIdEnum evenId, TypeCtrl *pTypeCtrl);
 typedef struct {
-    EVIdEnum  EventId;				/* ¹¦ÄÜID */
-    pEventFunEntry ActFun;		/* ¹¦ÄÜº¯Êı */
+    EVIdEnum  EventId;				/* åŠŸèƒ½ID */
+    pEventFunEntry ActFun;		/* åŠŸèƒ½å‡½æ•° */
 } ACT_FUN;
 
 typedef struct {
-    EVEnum  EventId;				/* ¹¦ÄÜID */
+    EVEnum  EventId;				/* åŠŸèƒ½ID */
     partab_type *ParTab;
-    pCallback pFun;		      /* ¹¦ÄÜº¯Êı */
+    pCallback pFun;		      /* åŠŸèƒ½å‡½æ•° */
 } pCallbackFun;
 
 
@@ -158,12 +158,12 @@ static void PID_Calculate(PidParam *vPID, TypeCommon *ParaCtrl)
     float temp_a, temp_b;
     float temp_c, temp_d;
     s16 PVauleRun, DVauleRun;
-    PVauleRun = vPID->P; //µÃµ½»ı·ÖµÄÕæÊµÔËĞĞ¿ØÖÆÖµ
-    DVauleRun = vPID->d; //µÃµ½Î¢·ÖµÄÕæÊµÔËĞĞ¿ØÖÆÖµ
+    PVauleRun = vPID->P; //å¾—åˆ°ç§¯åˆ†çš„çœŸå®è¿è¡Œæ§åˆ¶å€¼
+    DVauleRun = vPID->d; //å¾—åˆ°å¾®åˆ†çš„çœŸå®è¿è¡Œæ§åˆ¶å€¼
 
-    if (fabs(vPID->Target - vPID->Measure) > PVauleRun) { //½ûÖ¹Î¢·Ö
-        vPID->DFVaule    = vPID->Measure;      //Î¢·ÖÏÈĞĞºóÎ¢·ÖÖµ
-        vPID->LastMeasure = vPID->Measure; //ÉÏÒ»´ÎÎÂ¶È²âÁ¿Öµ
+    if (fabs(vPID->Target - vPID->Measure) > PVauleRun) { //ç¦æ­¢å¾®åˆ†
+        vPID->DFVaule    = vPID->Measure;      //å¾®åˆ†å…ˆè¡Œåå¾®åˆ†å€¼
+        vPID->LastMeasure = vPID->Measure; //ä¸Šä¸€æ¬¡æ¸©åº¦æµ‹é‡å€¼
     } else {
         temp_c = (vPID->Measure - vPID->LastMeasure) * DVauleRun * vPID->gama;
         temp_c = temp_c + DVauleRun * vPID->DFVaule;
@@ -181,15 +181,15 @@ static void PID_Calculate(PidParam *vPID, TypeCommon *ParaCtrl)
         vPID->LastMeasure = vPID->Measure;
     }
 
-    /* »ı·Ö´¦Àí */
-    if ((vPID->Target - vPID->DFVaule) >= PVauleRun) { //ÏÂ±ÈÀı´øÍâ
-        vPID->OutValue = 1000; //È«¹¦ÂÊÊä³ö
-        vPID->ISumVaule = 0; //»ı·ÖÀÛ»ıÇåÁã
+    /* ç§¯åˆ†å¤„ç† */
+    if ((vPID->Target - vPID->DFVaule) >= PVauleRun) { //ä¸‹æ¯”ä¾‹å¸¦å¤–
+        vPID->OutValue = 1000; //å…¨åŠŸç‡è¾“å‡º
+        vPID->ISumVaule = 0; //ç§¯åˆ†ç´¯ç§¯æ¸…é›¶
     } else {
-        if ((vPID->DFVaule - vPID->Target) >= PVauleRun) { //ÉÏ±ÈÀı´øÍâ
-            vPID->OutValue = 0; //¹Ø±ÕÊä³ö
-            vPID->ISumVaule = 0; //»ı·ÖÀÛ»ıÇåÁã
-        } else { //±äËÙ»ı·Ö´¦Àí
+        if ((vPID->DFVaule - vPID->Target) >= PVauleRun) { //ä¸Šæ¯”ä¾‹å¸¦å¤–
+            vPID->OutValue = 0; //å…³é—­è¾“å‡º
+            vPID->ISumVaule = 0; //ç§¯åˆ†ç´¯ç§¯æ¸…é›¶
+        } else { //å˜é€Ÿç§¯åˆ†å¤„ç†
             if (vPID->Measure < vPID->Target) {
                 temp_a = PVauleRun / 5;
 
@@ -205,7 +205,7 @@ static void PID_Calculate(PidParam *vPID, TypeCommon *ParaCtrl)
             }
 
             if (!vPID->Bit.bDisIsum) {
-                temp_b = 0;    //½ûÖ¹»ı·Ö
+                temp_b = 0;    //ç¦æ­¢ç§¯åˆ†
             }
 
             temp_c = temp_b * 1000;
@@ -248,37 +248,37 @@ void Control(PidParam* PID_Parameter, TypeCommon *pTypeCommon)
     short int temp_a;
     int temp_b;
 
-    if (PID_Parameter->Bit.bOver || PID_Parameter->Bit.bProtect) { //ÎÂ¶ÈÒç³ö±êÖ¾£¬ji
-        PID_Parameter->DFVaule = PID_Parameter->Measure; //Î¢·ÖÏÈĞĞºóÎ¢·ÖÖµ
-        PID_Parameter->LastMeasure = PID_Parameter->Measure; //ÉÏÒ»´ÎÎÂ¶È²âÁ¿Öµ
+    if (PID_Parameter->Bit.bOver || PID_Parameter->Bit.bProtect) { //æ¸©åº¦æº¢å‡ºæ ‡å¿—ï¼Œji
+        PID_Parameter->DFVaule = PID_Parameter->Measure; //å¾®åˆ†å…ˆè¡Œåå¾®åˆ†å€¼
+        PID_Parameter->LastMeasure = PID_Parameter->Measure; //ä¸Šä¸€æ¬¡æ¸©åº¦æµ‹é‡å€¼
         PID_Parameter-> HeatCallback(Heat_OFF);
         return;
     }
 
-    if (pTypeCommon->Flag_EnRun) { ////¿ØÖÆÆ÷ÔËĞĞ
+    if (pTypeCommon->Flag_EnRun) { ////æ§åˆ¶å™¨è¿è¡Œ
         if (PID_Parameter->Display <= PID_Parameter->Target) {
             PID_Parameter->Bit.bDowm = 0;
         }
 
-        if (PID_Parameter->Bit.bRun == 0) { //¶ÔÓ¦±êÖ¾Î»ÅĞ¶Ï
+        if (PID_Parameter->Bit.bRun == 0) { //å¯¹åº”æ ‡å¿—ä½åˆ¤æ–­
             PID_Parameter->Time_5min = 0;
-            PID_Parameter->Bit.bDisIsum = 0;//½ûÖ¹»ı·Ö
+            PID_Parameter->Bit.bDisIsum = 0;//ç¦æ­¢ç§¯åˆ†
         }
     }
 
-    //½ûÖ¹»ı·Ö´¦Àí
+    //ç¦æ­¢ç§¯åˆ†å¤„ç†
     if (PID_Parameter->Time_5min > 300) {
         PID_Parameter->Time_5min = 310;
-        PID_Parameter->Bit.bDisIsum  = 1;  //½ûÖ¹¼ÓÈÈ»ı·ÖÀÛ»ı
+        PID_Parameter->Bit.bDisIsum  = 1;  //ç¦æ­¢åŠ çƒ­ç§¯åˆ†ç´¯ç§¯
     }
 
-    //Òç³ö¡¢¶¨Ê±½áÊøºóÍ£Ö¹ÎÂ¿Ø¡¢½ûÖ¹ÎÂ¶È¿ØÖÆÊ±¹Ø¶Ï¼ÓÈÈ  //×ÔÕû¶¨±êÖ¾Î»
-    if (PID_Parameter->Bit.bOver || ((PID_Parameter->Bit.bRun == 0))) { //ÎÂ¶ÈÒç³ö»òÍ£Ö¹ÎÂ¿Ø
+    //æº¢å‡ºã€å®šæ—¶ç»“æŸååœæ­¢æ¸©æ§ã€ç¦æ­¢æ¸©åº¦æ§åˆ¶æ—¶å…³æ–­åŠ çƒ­  //è‡ªæ•´å®šæ ‡å¿—ä½
+    if (PID_Parameter->Bit.bOver || ((PID_Parameter->Bit.bRun == 0))) { //æ¸©åº¦æº¢å‡ºæˆ–åœæ­¢æ¸©æ§
         PID_Parameter->HeatCallback(Heat_OFF);
         PID_Parameter->Bit.bHeatOut = 0;
-        //PID¿ØÖÆ¸³³õÖµ
+        //PIDæ§åˆ¶èµ‹åˆå€¼
         PID_Parameter->SetDiff = 0;
-        PID_Parameter->Time_5min = 0; //½ûÖ¹»ı·Ö¼ÆÊ±ÇåÁã
+        PID_Parameter->Time_5min = 0; //ç¦æ­¢ç§¯åˆ†è®¡æ—¶æ¸…é›¶
         PID_Parameter->Bit.bDisIsum = 0;
         PID_Parameter->ISumVaule = 0;
         PID_Parameter->DFVaule = PID_Parameter->Measure;
@@ -286,20 +286,20 @@ void Control(PidParam* PID_Parameter, TypeCommon *pTypeCommon)
         return;
     }
 
-    if (PID_Parameter->Time_HeatCycle >= PID_Parameter->T) { //¼ÓÈÈÒ»¸öÖÜÆÚ   ParaTempPID.T = 5;   //¿ØÖÆÖÜÆÚ
-        PID_Parameter->Time_HeatCycle = 0; //Time_HeatCycle  ¼ÓÈÈ¿ØÖÆÖÜÆÚ¼ÆÊ±
-        PID_Parameter->Time_HeatCounter = 0;	//Time_HeatCounter ¼ÓÈÈ¿ØÖÆÊ±¼ä¼ÆÊ±
-        //Êä³ö¹¦ÂÊ¿ØÖÆ
+    if (PID_Parameter->Time_HeatCycle >= PID_Parameter->T) { //åŠ çƒ­ä¸€ä¸ªå‘¨æœŸ   ParaTempPID.T = 5;   //æ§åˆ¶å‘¨æœŸ
+        PID_Parameter->Time_HeatCycle = 0; //Time_HeatCycle  åŠ çƒ­æ§åˆ¶å‘¨æœŸè®¡æ—¶
+        PID_Parameter->Time_HeatCounter = 0;	//Time_HeatCounter åŠ çƒ­æ§åˆ¶æ—¶é—´è®¡æ—¶
+        //è¾“å‡ºåŠŸç‡æ§åˆ¶
         PID_Calculate(PID_Parameter, pTypeCommon);
 
         if (PID_Parameter->SetDiff >= 5 || PID_Parameter->SetDiff <= -5) {
             PID_Parameter->Time_5min = 0;
             PID_Parameter->Bit.bDisIsum = 0;
             PID_Parameter->SetDiff = 0;
-        }//Éè¶¨Öµ±ä»¯³¬5£¬½ûÖ¹»ı·Ö
+        }//è®¾å®šå€¼å˜åŒ–è¶…5ï¼Œç¦æ­¢ç§¯åˆ†
 
-        temp_a = PID_Parameter->OutValue * PID_Parameter->T; //PIDÊä³öÖµ*¿ØÖÆÖÜÆÚ
-        temp_b = temp_a * PID_Parameter->AR * 0.01; //³Ë»ı*¹¦ÂÊ
+        temp_a = PID_Parameter->OutValue * PID_Parameter->T; //PIDè¾“å‡ºå€¼*æ§åˆ¶å‘¨æœŸ
+        temp_b = temp_a * PID_Parameter->AR * 0.01; //ä¹˜ç§¯*åŠŸç‡
         PID_Parameter->OutValue = (s16)temp_b;
     } else {
         if (PID_Parameter->Bit.bAlm) {
@@ -367,9 +367,9 @@ static void CurrentSampleValue(partab_type *pBuff, TypeCtrl*pSensorValue)
     ADC_Channel[ADC_Sense]		= ADC_Filter((unsigned short *)&pBuff[ADC_Sense], ADC_Sense);
 		ParUnSaved[PAR_POS_PRO_READ_ADC1-PAR_REDA_ADDR].uVal=ADC_Channel[PT_B1A1];
 		ParUnSaved[PAR_POS_PRO_READ_ADC2-PAR_REDA_ADDR].uVal=ADC_Channel[PT_B2A2];
-    Temperature = (0.0001*ParTab[PAR_POS_MAIN_TEMP_K].uVal* ADC_Channel[PT_B1A1] + 0.01*ParTab[PAR_POS_MAIN_TEMP_B].iVal) ;  //ÔİÊ±×¢ÊÍµô
+    Temperature = (0.0001*ParTab[PAR_POS_MAIN_TEMP_K].uVal* ADC_Channel[PT_B1A1] + 0.01*ParTab[PAR_POS_MAIN_TEMP_B].iVal) ;  //æš‚æ—¶æ³¨é‡Šæ‰
     SubTemperature = (0.0001*ParTab[PAR_POS_Mintor_TEMP_K].uVal* ADC_Channel[PT_B2A2] + 0.01*ParTab[PAR_POS_Mintor_TEMP_B].iVal) ;
-    //		ĞŞ¸ÄÎª
+    //		ä¿®æ”¹ä¸º
     Temperature = Temperature * (1 + ParTab[PAR_POS_TEMP_Pk].iVal * 0.0001) + 0.01 * ParTab[PAR_POS_TEMP_Pb].iVal;
     TempHumiCalibration((partab_type *) &ParTab[PAR_POS_PRO_TEMP_DISP1].iVal,
                         (partab_type *)&ParTab[PAR_POS_PRO_TEMP_WISH1].iVal, &Temperature, &MainTempIndex);
@@ -459,7 +459,7 @@ void PrintString(char *pString)
 void PrintStart(void)
 {
     printf("------------------------\r\n");
-    printf("       ºãÎÂºãÊªÏä       \r\n");
+    printf("       æ’æ¸©æ’æ¹¿ç®±       \r\n");
     printf("------------------------\r\n");
     printf("      Start  Point      \r\n");
     printf("------------------------\r\n");

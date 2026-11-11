@@ -19,12 +19,12 @@ typedef struct {
     u8 TimeMode: 1; 
 //#define FixMode						0
 //#define CurrentModePro 		1
-    u8 CurrentModeState: 1; //Ä£Ê½Ñ¡Ôñ 0£º¶¨ÖÆÄ£Ê½  1£º³ÌĞòÄ£Ê½
-    u8 Cnd: 1; //¿ØÎÂ·½Ê½ 0£ºÊ±¼äµ½½øÈëÏÂÒ»¶Î 1£ºÎÂ¶Èµ½½øÈëÏÂÒ»¶Î
+    u8 CurrentModeState: 1; //æ¨¡å¼é€‰æ‹© 0ï¼šå®šåˆ¶æ¨¡å¼  1ï¼šç¨‹åºæ¨¡å¼
+    u8 Cnd: 1; //æ§æ¸©æ–¹å¼ 0ï¼šæ—¶é—´åˆ°è¿›å…¥ä¸‹ä¸€æ®µ 1ï¼šæ¸©åº¦åˆ°è¿›å…¥ä¸‹ä¸€æ®µ
 #define      EnRun         1
 #define      DisRun        0
-    u8 Flag_EnRun: 1;      //¿ØÖÆÆ÷ÔËĞĞÍ£Ö¹±êÖ¾Î»
-	  u8 PowerOnRun :1;      //¶Ïµç»Ö¸´¹¦ÄÜ
+    u8 Flag_EnRun: 1;      //æ§åˆ¶å™¨è¿è¡Œåœæ­¢æ ‡å¿—ä½
+	  u8 PowerOnRun :1;      //æ–­ç”µæ¢å¤åŠŸèƒ½
     u8 ColdState: 1;
 	  u8 DoorRunControl:1;
 	  u8 LightState :1;
@@ -35,9 +35,9 @@ typedef struct {
 
 
 typedef struct {
-    unsigned char bHeatOut: 1; //¼ÓÈÈÊä³ö±êÖ¾Î»
-    unsigned char bDisIsum: 1; //½ûÖ¹¼ÓÈÈ»ı·ÖÀÛ»ı
-    unsigned char bAlm:  1;  //ÎÂ¶È±¨¾¯±êÖ¾Î»
+    unsigned char bHeatOut: 1; //åŠ çƒ­è¾“å‡ºæ ‡å¿—ä½
+    unsigned char bDisIsum: 1; //ç¦æ­¢åŠ çƒ­ç§¯åˆ†ç´¯ç§¯
+    unsigned char bAlm:  1;  //æ¸©åº¦æŠ¥è­¦æ ‡å¿—ä½
     unsigned char bOver: 1;
     unsigned char bProtect: 1;
     unsigned char bDowm: 1;
@@ -48,10 +48,10 @@ typedef struct {
 
 
 typedef struct {
-    short T; //¿ØÖÆÖÜÆÚ
-    short P; //±ÈÀı´ø
-    short I; //»ı·ÖÊ±¼ä
-    short d; //Î¢·ÖÊ±¼ä
+    short T; //æ§åˆ¶å‘¨æœŸ
+    short P; //æ¯”ä¾‹å¸¦
+    short I; //ç§¯åˆ†æ—¶é—´
+    short d; //å¾®åˆ†æ—¶é—´
     short OutValue;
     int ISumVaule;
     float Target;

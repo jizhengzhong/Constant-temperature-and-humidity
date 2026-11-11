@@ -8,15 +8,15 @@
 #define IIC_ACK_ERROR			0X01
 
 
-#define C_CMDERR          		0x01                // ÃüÁî×Ö´íÎó
-#define C_PARAERR          		0x02                // ÃüÁî²ÎÊı´íÎó
-#define C_CRCERR           		0x03                // Ğ£ÑéºÍ´íÎó
-#define C_E2P_READERR        	0x04                // ¶ÁEEPROMÊ§°Ü
-#define C_E2P_WRITEERR       	0x05                // Ğ´EEPROMÊ§°Ü
-#define C_E2P_RDBACK      		0x06				        // EEPROM»Ø¶Á´íÎó
-#define C_E2P_CRCERR         	0x07                // EEPROMĞ£ÑéºÍ´íÎó
+#define C_CMDERR          		0x01                // å‘½ä»¤å­—é”™è¯¯
+#define C_PARAERR          		0x02                // å‘½ä»¤å‚æ•°é”™è¯¯
+#define C_CRCERR           		0x03                // æ ¡éªŒå’Œé”™è¯¯
+#define C_E2P_READERR        	0x04                // è¯»EEPROMå¤±è´¥
+#define C_E2P_WRITEERR       	0x05                // å†™EEPROMå¤±è´¥
+#define C_E2P_RDBACK      		0x06				        // EEPROMå›è¯»é”™è¯¯
+#define C_E2P_CRCERR         	0x07                // EEPROMæ ¡éªŒå’Œé”™è¯¯
 
-// ¶ÁĞ´²Ù×÷ĞÅÏ¢
+// è¯»å†™æ“ä½œä¿¡æ¯
 #define EEPREAD             	0x00
 #define EEPWRITE            	0x01
 #define EEPCALCRC		   		    0x01

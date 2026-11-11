@@ -6,173 +6,173 @@
 #include "main.h"
 #include "common.h"
 #include "cmsis_os.h"
-#include "W25Qxx.h"          //°üº¬ĞèÒªµÄÍ·ÎÄ¼ş
-#include "spi.h"              //°üº¬ĞèÒªµÄÍ·ÎÄ¼ş
+#include "W25Qxx.h"          //åŒ…å«éœ€è¦çš„å¤´æ–‡ä»¶
+#include "spi.h"              //åŒ…å«éœ€è¦çš„å¤´æ–‡ä»¶
 
 
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£º³õÊ¼»¯W25Qxx                            */
-/*²Î  Êı£ºÎŞ                                       */
-/*·µ»ØÖµ£º0£ºÕıÈ·                                  */
+/*å‡½æ•°åï¼šåˆå§‹åŒ–W25Qxx                            */
+/*å‚  æ•°ï¼šæ—                                        */
+/*è¿”å›å€¼ï¼š0ï¼šæ­£ç¡®                                  */
 /*-------------------------------------------------*/
 uint16_t Readw35q64;
 uint8_t W25Qxx_Init(void)
 {
 		GPIO_InitTypeDef GPIO_Initure;
     
-    __HAL_RCC_GPIOB_CLK_ENABLE();                             //Ê¹ÄÜ¶Ë¿ÚBÊ±ÖÓ
+    __HAL_RCC_GPIOB_CLK_ENABLE();                             //ä½¿èƒ½ç«¯å£Bæ—¶é’Ÿ
 	
-	   GPIO_Initure.Pin=GPIO_PIN_12;                              //ÉèÖÃPD2
-    GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;                     //ÍÆÃâÊä³ö
-    GPIO_Initure.Pull=GPIO_PULLUP;                             //ÉÏÀ­
-    GPIO_Initure.Speed=GPIO_SPEED_FREQ_HIGH;                   //µÍËÙÄ£Ê½
-    HAL_GPIO_Init(GPIOB,&GPIO_Initure);                       //ÉèÖÃ	
-    CS_DISENABLE;                                             //CSÎŞĞ§ĞÅºÅ	
+	   GPIO_Initure.Pin=GPIO_PIN_12;                              //è®¾ç½®PD2
+    GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;                     //æ¨å…è¾“å‡º
+    GPIO_Initure.Pull=GPIO_PULLUP;                             //ä¸Šæ‹‰
+    GPIO_Initure.Speed=GPIO_SPEED_FREQ_HIGH;                   //ä½é€Ÿæ¨¡å¼
+    HAL_GPIO_Init(GPIOB,&GPIO_Initure);                       //è®¾ç½®	
+    CS_DISENABLE;                                             //CSæ— æ•ˆä¿¡å·	
 
-	 MX_SPI2_Init(); 	//³õÊ¼»¯SPI1½Ó¿Ú
+	 MX_SPI2_Init(); 	//åˆå§‹åŒ–SPI1æ¥å£
 	Readw35q64 = W25Qxx_ReadID();
-	if(W25Qxx_ReadID()==W25QxxID){                            //¶ÁÈ¡ID£¬ÕıÈ·½øÈëif
-		W25Qxx_Write_Enable();                                //Ğ´Ê¹ÄÜ
-	}else return 1;                                           //¶ÁÈ¡ID´íÎó£¬·µ»Ø1
+	if(W25Qxx_ReadID()==W25QxxID){                            //è¯»å–IDï¼Œæ­£ç¡®è¿›å…¥if
+		W25Qxx_Write_Enable();                                //å†™ä½¿èƒ½
+	}else return 1;                                           //è¯»å–IDé”™è¯¯ï¼Œè¿”å›1
 	
-	return 0;                                                 //ÕıÈ· ·µ»Ø0
+	return 0;                                                 //æ­£ç¡® è¿”å›0
 }
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25Qxx²ÁĞ´Ê¹ÄÜ                          */
-/*²Î  Êı£ºÎŞ                                       */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxæ“¦å†™ä½¿èƒ½                          */
+/*å‚  æ•°ï¼šæ—                                        */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Write_Enable(void)   
 {
-	W25Qxx_Wait_Busy();                     //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                               //CSÓĞĞ§ĞÅºÅ
-    SPI2_ReadWriteByte(W25Qxx_WriteEnable); //·¢ËÍĞ´Ê¹ÄÜ  
-	CS_DISENABLE;                            //CSÎŞĞ§ĞÅºÅ	    	      
+	W25Qxx_Wait_Busy();                     //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                               //CSæœ‰æ•ˆä¿¡å·
+    SPI2_ReadWriteByte(W25Qxx_WriteEnable); //å‘é€å†™ä½¿èƒ½  
+	CS_DISENABLE;                            //CSæ— æ•ˆä¿¡å·	    	      
 }
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25Qxx²ÁĞ´½ûÖ¹                          */
-/*²Î  Êı£ºÎŞ                                       */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxæ“¦å†™ç¦æ­¢                          */
+/*å‚  æ•°ï¼šæ—                                        */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25QXX_Write_Disable(void)
 {
-	W25Qxx_Wait_Busy();                    //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                              //CSÓĞĞ§ĞÅºÅ
-    SPI2_ReadWriteByte(W25Qxx_WriteDisable);  //·¢ËÍĞ´½ûÖ¹ 
-	CS_DISENABLE;                           //CSÎŞĞ§ĞÅºÅ
+	W25Qxx_Wait_Busy();                    //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                              //CSæœ‰æ•ˆä¿¡å·
+    SPI2_ReadWriteByte(W25Qxx_WriteDisable);  //å‘é€å†™ç¦æ­¢ 
+	CS_DISENABLE;                           //CSæ— æ•ˆä¿¡å·
 }
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£º¶ÁÈ¡W25QxxĞ¾Æ¬ID                        */
-/*²Î  Êı£ºÎŞ                                       */
-/*·µ»ØÖµ£º0XEF17 ÊÇW25QxxµÄID                     */
+/*å‡½æ•°åï¼šè¯»å–W25QxxèŠ¯ç‰‡ID                        */
+/*å‚  æ•°ï¼šæ—                                        */
+/*è¿”å›å€¼ï¼š0XEF17 æ˜¯W25Qxxçš„ID                     */
 /*-------------------------------------------------*/
 uint16_t W25Qxx_ReadID(void)
 {  
-	uint8_t wdata[6] = {0x90,0x00,0x00,0x00,0x00,0x00};             //¶ÁÈ¡IDÖ¸ÁîÊı¾İ
-	uint8_t rdata[6];                                               //½ÓÊÕÊı¾İ»º³åÇø
+	uint8_t wdata[6] = {0x90,0x00,0x00,0x00,0x00,0x00};             //è¯»å–IDæŒ‡ä»¤æ•°æ®
+	uint8_t rdata[6];                                               //æ¥æ”¶æ•°æ®ç¼“å†²åŒº
 	
-//	W25Qxx_Wait_Busy();                                             //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                                                      //CSÓĞĞ§ĞÅºÅ				    
-	HAL_SPI_TransmitReceive(&hspi2,wdata,rdata,6,1000);      //·¢ËÍ²¢½ÓÊÕÊı¾İ
-	CS_DISENABLE;                                                   //CSÎŞĞ§ĞÅºÅ				    
-	return (rdata[4]*256 + rdata[5]);                               //·µ»ØID                           
+//	W25Qxx_Wait_Busy();                                             //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                                                      //CSæœ‰æ•ˆä¿¡å·				    
+	HAL_SPI_TransmitReceive(&hspi2,wdata,rdata,6,1000);      //å‘é€å¹¶æ¥æ”¶æ•°æ®
+	CS_DISENABLE;                                                   //CSæ— æ•ˆä¿¡å·				    
+	return (rdata[4]*256 + rdata[5]);                               //è¿”å›ID                           
 }  
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25QxxµÈ´ı¿ÕÏĞ                          */
-/*²Î  Êı£ºÎŞ                                       */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxç­‰å¾…ç©ºé—²                          */
+/*å‚  æ•°ï¼šæ—                                        */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Wait_Busy(void)   
 {   
 	uint8_t res;
 	do{
-		CS_ENABLE;                                  //CSÓĞĞ§ĞÅºÅ				    
-		SPI2_ReadWriteByte(W25Qxx_ReadStatusReg1); //·¢ËÍ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷1ÃüÁî	    
-		res = SPI2_ReadWriteByte(0xff); 	        //¶ÁÈ¡×´Ì¬¼Ä´æÆ÷1    
-		CS_DISENABLE;                               //CSÎŞĞ§ĞÅºÅ
-	}while((res&0x01)==0x01);                       //µÈ´ıBUSYÎ»Çå¿Õ£¬±íÊ¾¿ÕÏĞ
+		CS_ENABLE;                                  //CSæœ‰æ•ˆä¿¡å·				    
+		SPI2_ReadWriteByte(W25Qxx_ReadStatusReg1); //å‘é€è¯»å–çŠ¶æ€å¯„å­˜å™¨1å‘½ä»¤	    
+		res = SPI2_ReadWriteByte(0xff); 	        //è¯»å–çŠ¶æ€å¯„å­˜å™¨1    
+		CS_DISENABLE;                               //CSæ— æ•ˆä¿¡å·
+	}while((res&0x01)==0x01);                       //ç­‰å¾…BUSYä½æ¸…ç©ºï¼Œè¡¨ç¤ºç©ºé—²
 } 
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25Qxx²Á³ıÒ»¸öÉÈÇø£¨4KB£©               */
-/*²Î  Êı£ºNBsector:µÚ¼¸¸öÉÈÇø £¨0~2047£©           */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxæ“¦é™¤ä¸€ä¸ªæ‰‡åŒºï¼ˆ4KBï¼‰               */
+/*å‚  æ•°ï¼šNBsector:ç¬¬å‡ ä¸ªæ‰‡åŒº ï¼ˆ0~2047ï¼‰           */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Erase_Sector(uint16_t NBsector)   
 {  
-    uint8_t wdata[4];                                     //Ö¸ÁîÊı¾İ»º³åÇø
+    uint8_t wdata[4];                                     //æŒ‡ä»¤æ•°æ®ç¼“å†²åŒº
 	
-	wdata[0] = W25Qxx_SectorErase;                       //ÉÈÇø²Á³ıÖ¸Áî 
-	wdata[1] = (NBsector*4096)>>16;                       //A23~A16µØÖ·Î»    
-	wdata[2] = (NBsector*4096)>>8;                        //A15~A8µØÖ·Î»   
-	wdata[3] = (NBsector*4096)>>0;                        //A7~A0µØÖ·Î»
+	wdata[0] = W25Qxx_SectorErase;                       //æ‰‡åŒºæ“¦é™¤æŒ‡ä»¤ 
+	wdata[1] = (NBsector*4096)>>16;                       //A23~A16åœ°å€ä½    
+	wdata[2] = (NBsector*4096)>>8;                        //A15~A8åœ°å€ä½   
+	wdata[3] = (NBsector*4096)>>0;                        //A7~A0åœ°å€ä½
 	
-	W25Qxx_Write_Enable();                               //Ğ´Ê¹ÄÜ   
-	W25Qxx_Wait_Busy();                                  //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                                            //CSÓĞĞ§ĞÅºÅ	  
-	HAL_SPI_Transmit(&hspi2,wdata,4,1000);         //·¢ËÍÊı¾İ    
-	CS_DISENABLE;                                         //CSÎŞĞ§ĞÅºÅ	
-	W25Qxx_Wait_Busy();                                  //µÈ´ı²Á³ıÍê³É	
+	W25Qxx_Write_Enable();                               //å†™ä½¿èƒ½   
+	W25Qxx_Wait_Busy();                                  //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                                            //CSæœ‰æ•ˆä¿¡å·	  
+	HAL_SPI_Transmit(&hspi2,wdata,4,1000);         //å‘é€æ•°æ®    
+	CS_DISENABLE;                                         //CSæ— æ•ˆä¿¡å·	
+	W25Qxx_Wait_Busy();                                  //ç­‰å¾…æ“¦é™¤å®Œæˆ	
 }
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25Qxx²Á³ıÒ»¸ö¿é£¨64KB£©                */
-/*²Î  Êı£ºNBsector:µÚ¼¸¸ö¿é £¨0~127£©              */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxæ“¦é™¤ä¸€ä¸ªå—ï¼ˆ64KBï¼‰                */
+/*å‚  æ•°ï¼šNBsector:ç¬¬å‡ ä¸ªå— ï¼ˆ0~127ï¼‰              */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Erase_Block(uint8_t NBBlock)   
 {  
-  uint8_t wdata[4];                                     //Ö¸ÁîÊı¾İ»º³åÇø
-	wdata[0] = W25Qxx_BlockErase;                        //¿é²Á³ıÖ¸Áî 
-	wdata[1] = (NBBlock*16*4096)>>16;                     //A23~A16µØÖ·Î»    
-	wdata[2] = (NBBlock*16*4096)>>8;                      //A15~A8µØÖ·Î»   
-	wdata[3] = (NBBlock*16*4096)>>0;                      //A7~A0µØÖ·Î»
+  uint8_t wdata[4];                                     //æŒ‡ä»¤æ•°æ®ç¼“å†²åŒº
+	wdata[0] = W25Qxx_BlockErase;                        //å—æ“¦é™¤æŒ‡ä»¤ 
+	wdata[1] = (NBBlock*16*4096)>>16;                     //A23~A16åœ°å€ä½    
+	wdata[2] = (NBBlock*16*4096)>>8;                      //A15~A8åœ°å€ä½   
+	wdata[3] = (NBBlock*16*4096)>>0;                      //A7~A0åœ°å€ä½
 	
-	W25Qxx_Write_Enable();                               //Ğ´Ê¹ÄÜ   
-	W25Qxx_Wait_Busy();                                  //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                                            //CSÓĞĞ§ĞÅºÅ	  
-  HAL_SPI_Transmit(&hspi2,wdata,4,1000);         //·¢ËÍÊı¾İ    
-	CS_DISENABLE;                                         //CSÎŞĞ§ĞÅºÅ
-  W25Qxx_Wait_Busy();                                  //µÈ´ı²Á³ıÍê³É	
+	W25Qxx_Write_Enable();                               //å†™ä½¿èƒ½   
+	W25Qxx_Wait_Busy();                                  //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                                            //CSæœ‰æ•ˆä¿¡å·	  
+  HAL_SPI_Transmit(&hspi2,wdata,4,1000);         //å‘é€æ•°æ®    
+	CS_DISENABLE;                                         //CSæ— æ•ˆä¿¡å·
+  W25Qxx_Wait_Busy();                                  //ç­‰å¾…æ“¦é™¤å®Œæˆ	
 }
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25QxxĞ´ÈëÒ»Ò³Êı¾İ£¨256×Ö½Ú£©           */
-/*²Î  Êı£ºwdata:´ıĞ´ÈëÊı¾İ                         */
-/*²Î  Êı£ºNBPage:µÚ¼¸¸öÒ³£¨0~32767£©               */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxå†™å…¥ä¸€é¡µæ•°æ®ï¼ˆ256å­—èŠ‚ï¼‰           */
+/*å‚  æ•°ï¼šwdata:å¾…å†™å…¥æ•°æ®                         */
+/*å‚  æ•°ï¼šNBPage:ç¬¬å‡ ä¸ªé¡µï¼ˆ0~32767ï¼‰               */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Write_Page(uint8_t* wbuff, uint16_t NBPage)
 {   	
-	uint8_t wdata[4];                                        //Ö¸ÁîÊı¾İ»º³åÇø
+	uint8_t wdata[4];                                        //æŒ‡ä»¤æ•°æ®ç¼“å†²åŒº
 	
-	wdata[0] = W25Qxx_PageProgram;                          //Ò³£¨256B£©Ğ´ÈëÖ¸Áî
-	wdata[1] = (NBPage*256)>>16;                             //A23~A16µØÖ·Î»    
-	wdata[2] = (NBPage*256)>>8;                              //A15~A8µØÖ·Î»   
-	wdata[3] = (NBPage*256)>>0;                              //A7~A0µØÖ·Î»
+	wdata[0] = W25Qxx_PageProgram;                          //é¡µï¼ˆ256Bï¼‰å†™å…¥æŒ‡ä»¤
+	wdata[1] = (NBPage*256)>>16;                             //A23~A16åœ°å€ä½    
+	wdata[2] = (NBPage*256)>>8;                              //A15~A8åœ°å€ä½   
+	wdata[3] = (NBPage*256)>>0;                              //A7~A0åœ°å€ä½
    
-	W25Qxx_Write_Enable();                                  //Ğ´Ê¹ÄÜ
-	W25Qxx_Wait_Busy();                                     //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                                               //CSÓĞĞ§ĞÅºÅ	  
-  HAL_SPI_Transmit(&hspi2,wdata,4,2000);            //·¢ËÍÊı¾İ
-	HAL_SPI_Transmit(&hspi2,wbuff,256,2000);          //·¢ËÍÊı¾İ       
-	CS_DISENABLE;                                            //CSÎŞĞ§ĞÅºÅ	     	         
+	W25Qxx_Write_Enable();                                  //å†™ä½¿èƒ½
+	W25Qxx_Wait_Busy();                                     //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                                               //CSæœ‰æ•ˆä¿¡å·	  
+  HAL_SPI_Transmit(&hspi2,wdata,4,2000);            //å‘é€æ•°æ®
+	HAL_SPI_Transmit(&hspi2,wbuff,256,2000);          //å‘é€æ•°æ®       
+	CS_DISENABLE;                                            //CSæ— æ•ˆä¿¡å·	     	         
 } 
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºW25Qxx¶ÁÈ¡Êı¾İ                          */
-/*²Î  Êı£ºrdata:´æ·ÅÊı¾İ»º³åÇø                     */
-/*²Î  Êı£ºrAddr:¶ÁÈ¡µÄ¿ªÊ¼µØÖ·                     */
-/*²Î  Êı£ºlen:¶ÁÈ¡¶àÉÙ×Ö½ÚÊı¾İ                     */
-/*·µ»ØÖµ£ºÎŞ                                       */
+/*å‡½æ•°åï¼šW25Qxxè¯»å–æ•°æ®                          */
+/*å‚  æ•°ï¼šrdata:å­˜æ”¾æ•°æ®ç¼“å†²åŒº                     */
+/*å‚  æ•°ï¼šrAddr:è¯»å–çš„å¼€å§‹åœ°å€                     */
+/*å‚  æ•°ï¼šlen:è¯»å–å¤šå°‘å­—èŠ‚æ•°æ®                     */
+/*è¿”å›å€¼ï¼šæ—                                        */
 /*-------------------------------------------------*/
 void W25Qxx_Read(uint8_t* rdata,uint32_t rAddr,uint32_t len)   
 { 
-    uint8_t wdata[4];                                     //Ö¸ÁîÊı¾İ»º³åÇø
-	wdata[0] = W25Qxx_ReadData;                          //¶ÁÊı¾İÖ¸Áî
-	wdata[1] = rAddr>>16;                                 //A23~A16µØÖ·Î»    
-	wdata[2] = rAddr>>8;                                  //A15~A8µØÖ·Î»   
-	wdata[3] = rAddr>>0;                                  //A7~A0µØÖ·Î»
+    uint8_t wdata[4];                                     //æŒ‡ä»¤æ•°æ®ç¼“å†²åŒº
+	wdata[0] = W25Qxx_ReadData;                          //è¯»æ•°æ®æŒ‡ä»¤
+	wdata[1] = rAddr>>16;                                 //A23~A16åœ°å€ä½    
+	wdata[2] = rAddr>>8;                                  //A15~A8åœ°å€ä½   
+	wdata[3] = rAddr>>0;                                  //A7~A0åœ°å€ä½
 	
-	W25Qxx_Wait_Busy();                                  //µÈ´ı¿ÕÏĞ
-	CS_ENABLE;                                            //CSÓĞĞ§ĞÅºÅ	  
-  HAL_SPI_Transmit(&hspi2,wdata,4,2000);         //·¢ËÍÊı¾İ
-	HAL_SPI_Receive(&hspi2,rdata,len,20000);       //½ÓÊÕÊı¾İ            
-	CS_DISENABLE;                                         //CSÎŞĞ§ĞÅºÅ	     	      
+	W25Qxx_Wait_Busy();                                  //ç­‰å¾…ç©ºé—²
+	CS_ENABLE;                                            //CSæœ‰æ•ˆä¿¡å·	  
+  HAL_SPI_Transmit(&hspi2,wdata,4,2000);         //å‘é€æ•°æ®
+	HAL_SPI_Receive(&hspi2,rdata,len,20000);       //æ¥æ”¶æ•°æ®            
+	CS_DISENABLE;                                         //CSæ— æ•ˆä¿¡å·	     	      
 }

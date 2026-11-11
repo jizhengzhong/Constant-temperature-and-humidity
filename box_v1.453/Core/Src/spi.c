@@ -119,16 +119,16 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
 /* USER CODE BEGIN 1 */
 /*-------------------------------------------------*/
-/*º¯ÊıÃû£ºSPI½Ó¿Ú¶ÁĞ´Êı¾İ                          */
-/*²Î  Êı£ºTxData£º·¢ËÍµÄÊı¾İ                       */
-/*·µ»ØÖµ£º¶ÁÈ¡µÄÊı¾İ                               */
+/*å‡½æ•°åï¼šSPIæ¥å£è¯»å†™æ•°æ®                          */
+/*å‚  æ•°ï¼šTxDataï¼šå‘é€çš„æ•°æ®                       */
+/*è¿”å›å€¼ï¼šè¯»å–çš„æ•°æ®                               */
 /*-------------------------------------------------*/
 uint8_t SPI2_ReadWriteByte(uint8_t TxData)
 {
-    uint8_t Rxdata;                                                    //¶¨ÒåÒ»¸ö±äÁ¿±£´æ½ÓÊÕµ½µÄÊı¾İ
+    uint8_t Rxdata;                                                    //å®šä¹‰ä¸€ä¸ªå˜é‡ä¿å­˜æ¥æ”¶åˆ°çš„æ•°æ®
     
-	HAL_SPI_TransmitReceive(&hspi2,&TxData,&Rxdata,1, 1000);    //·¢ËÍ²¢½ÓÊÕÒ»×Ö½ÚÊı¾İ     
- 	return Rxdata;          		                                   //·µ»ØÊÕµ½µÄÊı¾İ		
+	HAL_SPI_TransmitReceive(&hspi2,&TxData,&Rxdata,1, 1000);    //å‘é€å¹¶æ¥æ”¶ä¸€å­—èŠ‚æ•°æ®     
+ 	return Rxdata;          		                                   //è¿”å›æ”¶åˆ°çš„æ•°æ®		
 }
 
 /* USER CODE END 1 */

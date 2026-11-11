@@ -16,7 +16,7 @@ typedef struct{
 	#define CrcAddressLow    10 
 	
 	
-///////////±ßÔµ²É¼¯/////////////
+///////////è¾¹ç¼˜é‡‡é›†/////////////
 	#define EdgeCollAddrH   2
 	#define EdgeCollAddrL   3
 	#define EdgeCollCountH  4

@@ -18,7 +18,7 @@ unsigned char const gcCRC8DATA[] =
 	0x57, 0x09, 0xeb, 0xb5, 0x36, 0x68, 0x8a, 0xd4, 0x95, 0xcb, 0x29, 0x77, 0xf4, 0xaa, 0x48, 0x16,
 	0xe9, 0xb7, 0x55, 0x0b, 0x88, 0xd6, 0x34, 0x6a, 0x2b, 0x75, 0x97, 0xc9, 0x4a, 0x14, 0xf6, 0xa8,
 	0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
-};//256¸ö×Ö½Ú
+};//256ä¸ªå­—èŠ‚
 	
 unsigned char Crc8(unsigned char *cpCrcBuf, unsigned int wLength)
 {
@@ -43,7 +43,7 @@ unsigned char EEPRW_Mode(unsigned char cMode, unsigned char cType, unsigned char
 	{
         if (cMode & EEPCHECKCRC) 
 		{	
-   	 		cCrcCode = Crc8(cpBuf, wLength - 1);  			          // ¼ÆËãÐ£Ñé
+   	 		cCrcCode = Crc8(cpBuf, wLength - 1);  			          // è®¡ç®—æ ¡éªŒ
    	 		if (cCrcCode != cpBuf[wLength-1])
 					return (C_NOTOK);
    	 	}	
@@ -52,7 +52,7 @@ unsigned char EEPRW_Mode(unsigned char cMode, unsigned char cType, unsigned char
     {
         if (cMode & EEPCALCRC)
         { 
-  	     	cCrcCode = Crc8(cpBuf, wLength - 1);  						 //¼ÆËãÐ£Ñé
+  	     	cCrcCode = Crc8(cpBuf, wLength - 1);  						 //è®¡ç®—æ ¡éªŒ
    	     	cpBuf[wLength - 1] = cCrcCode;
    	    }
     }

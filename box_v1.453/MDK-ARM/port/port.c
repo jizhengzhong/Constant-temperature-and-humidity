@@ -27,22 +27,22 @@
 #include "main.h"
 #include "contrl.h"
 
-partab_type ParTab[PAR_POS_END + 2]; //��������
-partab_type ParReceive[PAR_POS_END + 2]; //���ղ���
-partab_type ParSaved[PAR_POS_END + 2]; //�����Ѵ洢�Ĳ���
+partab_type ParTab[PAR_POS_END + 2]; //工作参数
+partab_type ParReceive[PAR_POS_END + 2]; //接收参数
+partab_type ParSaved[PAR_POS_END + 2]; //接收已存储的参数
 partab_type ParUnSaved[25];
 
-// uint8_t    ParReadSt[PAR_POS_END + 2]; //ָʾ��λ���Ѷ��ò���
+// uint8_t    ParReadSt[PAR_POS_END + 2]; //指示上位机已读该参数
 
 
-#define REG_INPUT_START     0x0001U //Ѱַ��ַ�Ǵ�1��ʼ��
+#define REG_INPUT_START     0x0001U //寻址地址是从1开始的
 #define REG_INPUT_NREGS 4
 
 #define REG_HOLDING_START               ( 1 )
 #define REG_HOLDING_NREGS               ( 32 )
 /* ----------------------- Static variables ---------------------------------*/
 static uint16_t   usRegInputStart = REG_INPUT_START;
-static uint16_t   usRegInputBuf[REG_INPUT_NREGS] = {0x01, 0x02, 0x03, 0x04}; //Ϊ����֤ʹ�õĳ�ʼ��ֵ
+static uint16_t   usRegInputBuf[REG_INPUT_NREGS] = {0x01, 0x02, 0x03, 0x04}; //为了验证使用的初始化值
 
 static USHORT   usRegHoldingStart = REG_HOLDING_START;
 
@@ -144,14 +144,14 @@ eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs,
 /*****************************************************************************//*!
 * @brief   hold read.
 *
-* @param   index: ���ݵ�ַ
+* @param   index: 数据地址
 *
-* @return  data:����
-* ��ַ���仮�֣�
-* 0x100 ��ȡϵͳ����
-* 0x200 ��ȡϵͳ����
-* 0x280 ����/����״̬
-* 0x400 ����
+* @return  data:数据
+* 地址区间划分：
+* 0x100 获取系统参数
+* 0x200 获取系统参数
+* 0x280 命令/运行状态
+* 0x400 调试
 * @ Pass/ Fail criteria: none
 *****************************************************************************/
 
@@ -169,7 +169,7 @@ uint16_t RegHoldRead(uint16_t Index)
     //    if (status == osOK)
     //		{
 
-    //��ȡ����
+    //获取参数
     if ((Index >= PAR_VERSION_ID) && (Index <= (PAR_VERSION_ID + PAR_POS_END))) {
         Data.iVal = ParTab[Index - PAR_VERSION_ID].uVal;
     } else 
@@ -196,11 +196,11 @@ uint16_t RegHoldRead(uint16_t Index)
 					break;
 								
         case PAR_POS_TEMP_MONITOR:
-            Data.iVal = SensorType.SubTemperature * 10 ;   //����¶�
+            Data.iVal = SensorType.SubTemperature * 10 ;   //监控温度
             break;
 
         case PAR_POS_HUMI_MONITOR:
-            Data.iVal = SensorType.SubHumidity * 10; //���ʪ��
+            Data.iVal = SensorType.SubHumidity * 10; //监控湿度
             break;
 
         case PAR_POS_TEMP_DISPLAY:
@@ -215,26 +215,26 @@ uint16_t RegHoldRead(uint16_t Index)
             break;
 
         case PAR_POS_TEMP_POWER:
-					Data.iVal =SensorType.Parameter[TemperatureID].OutValue>=0 ? SensorType.Parameter[TemperatureID].OutValue * 0.1 / SensorType.Parameter[TemperatureID].T:0; //��ǰˮ��
+					Data.iVal =SensorType.Parameter[TemperatureID].OutValue>=0 ? SensorType.Parameter[TemperatureID].OutValue * 0.1 / SensorType.Parameter[TemperatureID].T:0; //当前水温
             break;
 
         case PAR_POS_HUMI_POWER:
-					Data.iVal = SensorType.Parameter[HumidityID].OutValue>=0 ? SensorType.Parameter[HumidityID].OutValue * 0.1 / SensorType.Parameter[HumidityID].T :0; //����
+					Data.iVal = SensorType.Parameter[HumidityID].OutValue>=0 ? SensorType.Parameter[HumidityID].OutValue * 0.1 / SensorType.Parameter[HumidityID].T :0; //出力
             break;
 
         case PAR_POS_WATER_LEVEL:
-            Data.iVal = High_Level_Check << 1 | Low_Level_Check; //ˮλ���
+            Data.iVal = High_Level_Check << 1 | Low_Level_Check; //水位检测
             break;
 
         case PAR_POS_DOOR_STATE:
             SensorType.bDoorState == DoorOpen_State ? (Data.iVal = 0) : (Data.iVal = 1);
             break;
 
-        case PAR_POS_RUN_COUNT_TIME:                                            //��ǰʱ��
+        case PAR_POS_RUN_COUNT_TIME:                                            //当前时间
             Data.iVal = SensorType.RunTime / 60;
             break;
 
-        case PAR_POS_LEFT_TIME:                                           //ʣ��ʱ��
+        case PAR_POS_LEFT_TIME:                                           //剩余时间
 
 					Data.iVal=	SensorType.SetRunTime == 0?  0:( SensorType.SetRunTime - SensorType.RunTime / 60 );
 
@@ -277,13 +277,13 @@ uint16_t RegHoldRead(uint16_t Index)
 /*****************************************************************************//*
 * @brief   hold read.
 *
-* @param   index: ���ݵ�ַ
+* @param   index: 数据地址
 *
-* @return  data:����
-* ��ַ���仮�֣�
-* 0x100 д��ϵͳ����
-* 0x280 ����/����״̬
-* 0x400 ����
+* @return  data:数据
+* 地址区间划分：
+* 0x100 写入系统参数
+* 0x280 命令/运行状态
+* 0x400 调试
 * @ Pass/ Fail criteria: none
 *****************************************************************************/
 uint16_t positon;
@@ -297,8 +297,8 @@ uint16_t RegHoldWrite(uint16_t Index, uint16_t Val)
 	     {
         pos = Index - PAR_VERSION_ID;
         positon   = pos;
-        if (ParCheck(pos, Data.iVal)) { //�ݽ����ݷ�Χ����ȥ��
-            //�������ɹ����������
+        if (ParCheck(pos, Data.iVal)) { //暂将数据范围限制去掉
+            //参数检测成功后更新数据
             ParTab[pos].uVal = ParReceive[pos].uVal = Val;
         }
     } else {

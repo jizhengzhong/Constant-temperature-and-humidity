@@ -4,28 +4,28 @@
    
  #include "main.h"
  #include "cmsis_os.h"
-#define CS_DISENABLE        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);HAL_Delay(10);    //CSÎŞĞ§ĞÅºÅ
-#define CS_ENABLE     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); HAL_Delay(10);  //CSÓĞĞ§ĞÅºÅ
+#define CS_DISENABLE        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);HAL_Delay(10);    //CSæ— æ•ˆä¿¡å·
+#define CS_ENABLE     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); HAL_Delay(10);  //CSæœ‰æ•ˆä¿¡å·
 
 #define W25QxxID	            0XEF16  //W25Qxx ID
-#define W25Qxx_WriteEnable		0x06    //Ğ´Ê¹ÄÜ
-#define W25Qxx_WriteDisable     0x04    //Ğ´½ûÖ¹
-#define W25Qxx_ReadStatusReg1	0x05    //¶Á×´Ì¬¼Ä´æÆ÷1Ö¸Áî
-#define W25Qxx_SectorErase		0x20    //ÉÈÇø£¨4KB£©²Á³ıÖ¸Áî
-#define W25Qxx_BlockErase	    0xD8    //¿é£¨64KB£©²Á³ıÖ¸Áî
-#define W25Qxx_PageProgram		0x02    //Ò³£¨256B£©Ğ´ÈëÖ¸Áî
-#define W25Qxx_ReadData	        0x03    //¶ÁÊı¾İÖ¸Áî
-#define W25Qxx_Powerdown        0xB9    //PowerdownÖ¸Áî
+#define W25Qxx_WriteEnable		0x06    //å†™ä½¿èƒ½
+#define W25Qxx_WriteDisable     0x04    //å†™ç¦æ­¢
+#define W25Qxx_ReadStatusReg1	0x05    //è¯»çŠ¶æ€å¯„å­˜å™¨1æŒ‡ä»¤
+#define W25Qxx_SectorErase		0x20    //æ‰‡åŒºï¼ˆ4KBï¼‰æ“¦é™¤æŒ‡ä»¤
+#define W25Qxx_BlockErase	    0xD8    //å—ï¼ˆ64KBï¼‰æ“¦é™¤æŒ‡ä»¤
+#define W25Qxx_PageProgram		0x02    //é¡µï¼ˆ256Bï¼‰å†™å…¥æŒ‡ä»¤
+#define W25Qxx_ReadData	        0x03    //è¯»æ•°æ®æŒ‡ä»¤
+#define W25Qxx_Powerdown        0xB9    //PowerdownæŒ‡ä»¤
 
-uint8_t W25Qxx_Init(void);                     //º¯ÊıÉùÃ÷£¬³õÊ¼»¯W25Qxx
-void W25Qxx_Write_Enable(void);                //º¯ÊıÉùÃ÷£¬W25Qxx²ÁĞ´Ê¹ÄÜ
-void W25QXX_Write_Disable(void);                //º¯ÊıÉùÃ÷£¬W25Qxx²ÁĞ´½ûÖ¹
-uint16_t W25Qxx_ReadID(void);                  //º¯ÊıÉùÃ÷£¬¶ÁÈ¡W25QxxĞ¾Æ¬ID
-void W25Qxx_Wait_Busy(void);                   //º¯ÊıÉùÃ÷£¬W25QxxµÈ´ı¿ÕÏĞ
-void W25Qxx_Erase_Sector(uint16_t);            //º¯ÊıÉùÃ÷£¬W25Qxx²Á³ıÒ»¸öÉÈÇø£¨4KB£©
-void W25Qxx_Erase_Block(uint8_t);              //º¯ÊıÉùÃ÷£¬W25Qxx²Á³ıÒ»¸ö¿é£¨64KB£©
-void W25Qxx_Write_Page(uint8_t*, uint16_t);    //º¯ÊıÉùÃ÷£¬W25QxxĞ´ÈëÒ»Ò³Êı¾İ£¨256×Ö½Ú£©
-void W25Qxx_Read(uint8_t*,uint32_t,uint32_t);  //º¯ÊıÉùÃ÷£¬W25Qxx¶ÁÈ¡Êı¾İ
+uint8_t W25Qxx_Init(void);                     //å‡½æ•°å£°æ˜ï¼Œåˆå§‹åŒ–W25Qxx
+void W25Qxx_Write_Enable(void);                //å‡½æ•°å£°æ˜ï¼ŒW25Qxxæ“¦å†™ä½¿èƒ½
+void W25QXX_Write_Disable(void);                //å‡½æ•°å£°æ˜ï¼ŒW25Qxxæ“¦å†™ç¦æ­¢
+uint16_t W25Qxx_ReadID(void);                  //å‡½æ•°å£°æ˜ï¼Œè¯»å–W25QxxèŠ¯ç‰‡ID
+void W25Qxx_Wait_Busy(void);                   //å‡½æ•°å£°æ˜ï¼ŒW25Qxxç­‰å¾…ç©ºé—²
+void W25Qxx_Erase_Sector(uint16_t);            //å‡½æ•°å£°æ˜ï¼ŒW25Qxxæ“¦é™¤ä¸€ä¸ªæ‰‡åŒºï¼ˆ4KBï¼‰
+void W25Qxx_Erase_Block(uint8_t);              //å‡½æ•°å£°æ˜ï¼ŒW25Qxxæ“¦é™¤ä¸€ä¸ªå—ï¼ˆ64KBï¼‰
+void W25Qxx_Write_Page(uint8_t*, uint16_t);    //å‡½æ•°å£°æ˜ï¼ŒW25Qxxå†™å…¥ä¸€é¡µæ•°æ®ï¼ˆ256å­—èŠ‚ï¼‰
+void W25Qxx_Read(uint8_t*,uint32_t,uint32_t);  //å‡½æ•°å£°æ˜ï¼ŒW25Qxxè¯»å–æ•°æ®
 	
 #endif
 

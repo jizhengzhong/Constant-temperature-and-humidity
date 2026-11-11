@@ -4,8 +4,8 @@
 
 //#define fliter_adv  0.5
 
-//float Temp_Set;      //�¶��趨ֵ
-//s16 Temp_Display;  //�¶���ʾֵ
+//float Temp_Set;      //温度设定值
+//s16 Temp_Display;  //温度显示值
 
 //int32_t DataFlt(float f_real, int32_t i_now);
 

@@ -54,8 +54,8 @@ typedef struct
 typedef  void (*pFlowCallback)(Defrost* DefrostStruct);
 typedef  void (*pFlowEventFunEntry)(DeforstID EventId,uint16_t * pTab,pFlowCallback pFUN);
 typedef struct {
-    DeforstID  EventId;				/* 功能ID */
-    pFlowEventFunEntry pFun;		/* 功能函数 */
+    DeforstID  EventId;				/* 鍔熻兘ID */
+    pFlowEventFunEntry pFun;		/* 鍔熻兘鍑芥暟 */
 } FlowFunStructDef;
 
 

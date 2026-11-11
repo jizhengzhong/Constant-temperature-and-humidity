@@ -69,7 +69,7 @@ extern  void prvvTIMERExpiredISR(void);
 extern  void prvvUARTTxReadyISR(void);
 extern  void prvvUARTRxISR(void);
 
-/* ͣ�� HardFault ���⼸�hf_pc �ǳ���������ָ���ַ�� */
+/* 停在 HardFault 后看这几项。hf_pc 是出错的那条指令地址。 */
 volatile uint32_t hf_r0;
 volatile uint32_t hf_r1;
 volatile uint32_t hf_r2;
@@ -100,7 +100,7 @@ void HardFault_Dump(uint32_t *stack)
     while (1) {
     }
 }
-/* eMBInit() ֮ǰ��Щָ���� NULL���ж���ֱ�ӵ��û� HardFault */
+/* eMBInit() 之前这些指针是 NULL，中断里直接调用会 HardFault */
 extern unsigned char (*pxMBFrameCBByteReceived)(void);
 extern unsigned char (*pxMBFrameCBTransmitterEmpty)(void);
 extern unsigned char (*pxMBPortCBTimerExpired)(void);
@@ -127,7 +127,7 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-/* ������ C ��������ջ֮֡ǰȡ�� MSP/PSP�������õ��Ĳ���Ӳ��ѹջ�� */
+/* 必须在 C 函数建立栈帧之前取出 MSP/PSP，这里拿到的才是硬件压栈。 */
 __asm void HardFault_Handler(void)
 {
     IMPORT  HardFault_Dump
@@ -269,7 +269,7 @@ void TIM4_IRQHandler(void)
     /* USER CODE BEGIN TIM4_IRQn 0 */
     /* USER CODE END TIM4_IRQn 0 */
     /* USER CODE BEGIN TIM4_IRQn 1 */
-    /* ����ͬʱ�������±�־��ʹ��λ��ֻ��ʹ��λʱ����ʼ�����µ� UIF ���ڻص���δ��ֵʱ���ÿ�ָ�롣 */
+    /* 必须同时看到更新标志和使能位。只有使能位时，初始化留下的 UIF 会在回调尚未赋值时调用空指针。 */
     if ((__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != RESET) &&
         (__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_UPDATE) != RESET)) {
         __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
@@ -301,8 +301,8 @@ void USART3_IRQHandler(void)
     uint32_t cr1;
     /* USER CODE BEGIN USART3_IRQn 0 */
     /* USER CODE END USART3_IRQn 0 */
-    /* Modbus ��ռ USART3��HAL_UART_IRQHandler �ڳ���ʱ���� ErrorCallback��
-       �� ErrorCallback ԭ�Ȼ��� eMBInit() ֮ǰ�� RXNE���Ӷ����ÿյ� pxMBFrameCBByteReceived�� */
+    /* Modbus 独占 USART3。HAL_UART_IRQHandler 在出错时进入 ErrorCallback，
+       而 ErrorCallback 原先会在 eMBInit() 之前打开 RXNE，从而调用空的 pxMBFrameCBByteReceived。 */
     /* USER CODE BEGIN USART3_IRQn 1 */
     sr = USART3->SR;
     cr1 = USART3->CR1;
